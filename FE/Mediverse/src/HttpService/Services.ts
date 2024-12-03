@@ -1,0 +1,80 @@
+const Services = {
+  CREATE_USER: '/user/create_user/',
+  COUNTRIES: '/master/countries/',
+  VERIFY_USER: '/user/verify_User/',
+  RESEND_OTP: '/user/resend_otp/',
+  GET_PROFILE: '/user/profile_update/',
+  GST_CHECK:'/user/gst_check/',
+  GST_TYPE:'/master/gst_type/',
+  GST_REGISTER:'/user/gst_registration/',
+  ESTABLISHMENT_IMAGES:'/user/business_image/',
+  FAQ:'/user/faqs_category_qa',
+  GET_CATEGORIES:'/master/categories_all/',
+  GET_SUB_CATEGORIES:'/master/sub_category/',
+  GET_POST_TYPES:'/master/Post_type/',
+  SUBMIT_CATEGORIES:'/user/user_categories/',
+  BRANDS_LIST:'/master/brand_all/',
+  GET_STATES:'/master/states_all/',
+  GET_DISTRICTS:'/master/district_all/',
+  CERTIFICATE_AUTHORIZE: '/user/authorization/',
+  ADD_POST_TYPE:'/feedapp/post_type/',
+  ADD_MAIN_POST:'/feedapp/main_post/',
+  ADD_MAIN_POST_CONTENT:'/feedapp/main_post_api_content/',
+  PRODUCTS:'/product/products/',
+  INNER_FEED:'/feedapp/inner_feed/',
+  INNER_FEED_PRODUCT:'/feedapp/inner_feed_product/',
+  GET_INNER_FEED:'/feedapp/inner_feed_all/',
+  SCHEDULE_POST:'/feedapp/schedule_post/',
+  POST_EXPIRY:'/feedapp/Post_Expire/',
+  MANAGE_POST:'/feedapp/manage_post/',
+  POST_DETAILS:'/feedapp/inner_feed_all/',
+
+  // SELLER_HOME
+  COMMENTS:'/home/comment/',
+  WISHLIST:'/home/wishlist/',
+  ADD_TO_GET_QUOTE:'/home/add-to-GetQuote/',
+  ADD_TO_CART:'/home/add_to_cart/',
+  CREATE_ORDER:'/home/order_create/',
+  ADD_ORDER_ADDRESS:'/home/order-address/',
+  FINAL_ORDER:'/home/final-order/',
+  COMPLETE_TRANSACTION:'/home/payment/',
+
+
+  //SELLER WALLET 
+  GET_TOTAL_MONEY:'feedapp/add-wallet-balance/',
+  GET_TOTAL_MONEY_REPORT :'feedapp/wallet-transactions/',
+
+  //SELLER_PROFILE
+  GET_ALL_POSTS:'/home/main-post-count/',
+  GET_NO_OF_BUYERS:'/home/seller-buyers-count/',
+  MY_SAVED_POSTS:'/home/save_post/',
+
+  //HOME
+  MY_SELLER:'/home/My-seller-buyer/',
+  NEW_SELLER:'/home/New_seller-list/',
+  NEW_BUYER: '/home/New-Buyers/',
+  NEW_SELLER_POSTS: '/home/seller-buyer/',
+  MY_SELLER_POSTS:'/home/My-Seller-Posts/',
+  SELECTED_SELLER_POSTS: '/home/My-seller-live-posts/',
+  ORDER_VALUE: '/home/seller-orders/',
+  COMBINE_ORDER_DETAIL: '/home/combine-order-detail/',
+  INVENTORY:'/product/products/',
+  POST_INSIGHTS:'/feedapp/my_posts/',
+  COLLECTIONS:'/home/payment-filter/',
+  DASHBOARD_COLLECTIONS: '/home/collections/',
+  DASHBOARD_INVENTORY:'/home/products-availability/',
+  DASHBOARD_ORDER_VALUE:'/home/order-totals/',
+  SEARCH: '/home/search/',
+  SEARCH_DETAILS:'/home/SearchProductDetail/',
+  GET_OFFER_PRICE:'/home/offer-price/',
+  SET_OFFER_PRICE:'/home/offer-price/',
+  GET_ORDER_STATUS:'/master/order_status/',
+  SAVE_POST:'/home/save_post/',
+  GET_USER_PROFILE_POSTS: 'feedapp/my_posts/',
+  POST_USER_FOLLOW:'user/follow/',
+  PRODUCT_INSIDE_PROFILE:'/product/my-products/',
+
+
+  
+};
+export default Services;
