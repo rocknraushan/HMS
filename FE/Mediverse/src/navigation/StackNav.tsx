@@ -8,6 +8,7 @@ import VectorIcons, {IconSets} from '../components/Icons/VectorIcons';
 import {useUser} from '../context/user';
 import {rspF, rspW} from '../theme/responsive';
 import { Login } from '../screens';
+import SignupScreen from '../screens/auth/register/SignupScreen';
 
 const header = {headerShown: false};
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -20,31 +21,30 @@ const StackNav = () => {
   return (
     <Stack.Navigator
       screenOptions={{
-        // animationEnabled: true,
-        // ...TransitionPresets.SlideFromRightIOS,
-        // cardOverlayEnabled: true,
+        animationEnabled: true,
+        cardOverlayEnabled: true,
         // presentation: 'modal',
         headerTitleAlign: 'center',
         headerTitleStyle: {
           color: '#000',
           fontSize: Math.round(rspF(20)),
         },
-        // headerLeft: () => {
-        //   return (
-        //     <TouchableOpacity
-        //       style={{
-        //         padding: 4,
-        //       }}
-        //       onPress={() => navigation.goBack()}>
-        //       <VectorIcons
-        //         name="arrow-back-ios"
-        //         color={'#000'}
-        //         size={rspW(24)}
-        //         iconSet={IconSets.MaterialIcons}
-        //       />
-        //     </TouchableOpacity>
-        //   );
-        // },
+        headerLeft: () => {
+          return (
+            <TouchableOpacity
+              style={{
+                padding: 4,
+              }}
+              onPress={() => navigation.goBack()}>
+              <VectorIcons
+                name="arrow-back-ios"
+                color={'#000'}
+                size={rspW(24)}
+                iconSet={IconSets.MaterialIcons}
+              />
+            </TouchableOpacity>
+          );
+        },
       }}
     >
       <Stack.Screen
@@ -52,6 +52,15 @@ const StackNav = () => {
         component={Login}
         options={{
           headerTitle: '',
+          headerShown:false
+        }}
+      />
+      <Stack.Screen
+        name={'SIGNUP'}
+        component={SignupScreen}
+        options={{
+          headerTitle: '',
+          headerShown:false
         }}
       />
     </Stack.Navigator>

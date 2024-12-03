@@ -5,21 +5,32 @@ import { navStrings } from '../../../navigation/navStrings';
 
 const { height, width } = Dimensions.get('window');
 
-const LoginScreen = () => {
+const SignupScreen = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const navigation = useNavigation();
 
-  const handleLogin = () => {
+  const handleSignup = () => {
+    console.log('Username:', username);
     console.log('Email:', email);
     console.log('Password:', password);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
-      <Text style={styles.subtitle}>Please sign in to continue</Text>
+      <Text style={styles.title}>Create an Account</Text>
+      <Text style={styles.subtitle}>Please sign up to continue</Text>
+
+      {/* Username Input */}
+      <TextInput
+        style={styles.input}
+        placeholder="Username"
+        placeholderTextColor="#888"
+        value={username}
+        onChangeText={setUsername}
+      />
 
       {/* Email Input */}
       <TextInput
@@ -30,8 +41,6 @@ const LoginScreen = () => {
         onChangeText={setEmail}
         keyboardType="email-address"
       />
-
-      {/* Password Input */}
       <TextInput
         style={styles.input}
         placeholder="Password"
@@ -40,20 +49,11 @@ const LoginScreen = () => {
         onChangeText={setPassword}
         secureTextEntry
       />
-
-      {/* Login Button */}
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+      <TouchableOpacity style={styles.button} onPress={handleSignup}>
+        <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
-
-      {/* Signup Link */}
-      <TouchableOpacity onPress={() => navigation.navigate(navStrings.SIGNUP)}>
-        <Text style={styles.link}>Don't have an account? Sign Up</Text>
-      </TouchableOpacity>
-
-      {/* Forgot Password Link */}
-      <TouchableOpacity>
-        <Text style={styles.forgotPassword}>Forgot Password?</Text>
+      <TouchableOpacity onPress={() => navigation.navigate(navStrings.LOGIN)}>
+        <Text style={styles.link}>Already have an account? Login</Text>
       </TouchableOpacity>
     </View>
   );
@@ -106,11 +106,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
   },
-  forgotPassword: {
-    color: '#4CAF50',
-    textAlign: 'center',
-    fontSize: 14,
-  },
 });
 
-export default LoginScreen;
+export default SignupScreen;
