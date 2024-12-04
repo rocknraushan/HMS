@@ -1,95 +1,78 @@
-// import React, {useCallback, useLayoutEffect} from 'react';
-// import {View} from 'react-native';
-// import Animated, {
-//   useAnimatedStyle,
-//   useSharedValue,
-//   withTiming,
-// } from 'react-native-reanimated';
-// import SWrapper from '../../../components/wrappers/SWrapper';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, Dimensions, Image } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
+import { splash } from '../../../assets'; // Assuming splash image is in assets folder
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// import {NativeStackScreenProps} from '@react-navigation/native-stack';
-// import {Logo} from '../../../assets';
-// import {RootStackParamList} from '../../../navigation/navStrings';
-// import colors from '../../../theme/colors';
-// import styles from './styles';;
-// import translate from '../../../localisation/localize';
-// import {getUserProfile} from '../../../Services/Signup';
-// import {
-//   profileDataAtom,
-//   userDataAtom,
-//   userTypeAtom,
-// } from '../../../store/atoms';
+const { width, height } = Dimensions.get('window');
 
-// type SplashProps = NativeStackScreenProps<RootStackParamList, 'SPLASH'>;
+const Splash = ({ onAnimationEnd }: { onAnimationEnd: () => void }) => {
+  const scale = useSharedValue(0);
 
-// const Splash = ({route, navigation}: SplashProps) => {
+  // Perform login check in parallel with the animation
+  useEffect(() => {
+    const checkLoginState = async () => {
+      try {
+        const value = await AsyncStorage.getItem('Login');
+        const isLoggedIn = value !== null ? JSON.parse(value) : false;
 
-//   const navigate = useCallback(async () => {
-//     const loggedIn =await Storage.isLoggedIn();
-//     const language = await Storage.getLanguage();
-//     let screen: keyof RootStackParamList = 'WELCOME';
+        if (isLoggedIn) {
+          onAnimationEnd('BOTTOMTAB'); // Navigate to BottomTab if logged in
+        } else {
+          onAnimationEnd('LOGIN'); // Navigate to Login if not logged in
+        }
+      } catch (error) {
+        console.error('Error checking login state:', error);
+        onAnimationEnd('LOGIN'); // Default to LOGIN if error occurs
+      }
+    };
 
-//     if (loggedIn) {
-//       const data = await getUser();
-//       console.log('DATA', data);
+    // Start the animation and wait 1400ms
+    scale.value = withTiming(1, { duration: 1400 }, () => {
+      // Ensure that the navigation happens after 1400ms
+      runOnJS(checkLoginState)(); // Run the login check during the splash
+    });
+  }, []);
 
-//       if (language) {
-//         translate.setLanguage(language);
-//         if (!data?.is_gstRegistrationPage) {
-//           screen = 'GST_REGISTRATION';
-//         } else if (!data?.is_selectCategoriesPage) {
-//           screen = 'SELECT_CATEGORIES';
-//         } else if (!data?.is_establishPhotosPage) {
-//           screen = 'ESTABLISHMENT_PHOTOS';
-//         } else {
-//           screen = 'HOME';
-//         }
-//       } else if (!language) {
-//         screen = 'SELECT_LANGUAGE';
-//       }
-//     }
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
 
-//     // screen = 'GST_REGISTRATION';
+  return (
+    <View style={styles.container}>
+      <Animated.View style={[styles.circle, animatedStyle]}>
+        <Image source={splash} style={styles.image} resizeMode="contain" />
+      </Animated.View>
+    </View>
+  );
+};
 
-//     setTimeout(() => {
-//       if (
-//         screen === 'SELECT_LANGUAGE' ||
-//         screen === 'ESTABLISHMENT_PHOTOS' ||
-//         screen === 'SELECT_CATEGORIES'
-//       ) {
-//         navigation.replace(screen, {
-//           hideBack: true,
-//         });
-//       } else {
-//         navigation.replace(screen);
-//       }
-//     }, 2000);
-//   }, []);
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  circle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#3498db', // Optional fallback color
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  image: {
+    width: '80%',
+    height: '80%',
+  },
+});
 
-//   useLayoutEffect(() => {
-//     logoAnim.value = withTiming(1, {duration: 1000});
-//     // Storage.clear()
-//     navigate();
-//   }, []);
-
-//   const logoStyle = useAnimatedStyle(() => {
-//     return {
-//       opacity: logoAnim.value,
-//       transform: [{scale: logoAnim.value}],
-//     };
-//   });
-
-//   return (
-//     <SWrapper
-//       hidden={false}
-//       statusBarColor={colors.white}
-//       barStyle="light-content"
-//       padHor={0}>
-//       <View style={styles.logoContainer}>
-//         <Animated.Image source={Logo} style={[styles.logoImg, logoStyle]} />
-//       </View>
-//     </SWrapper>
-//   );
-// };
-
-// export default Splash;
+export default Splash;

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { navStrings } from '../../../navigation/navStrings';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { height, width } = Dimensions.get('window');
 
@@ -14,6 +15,8 @@ const LoginScreen = () => {
   const handleLogin = () => {
     console.log('Email:', email);
     console.log('Password:', password);
+    navigation.navigate(navStrings.BOTTOMTAB)
+    AsyncStorage.setItem('Login',JSON.stringify(true))
   };
 
   return (

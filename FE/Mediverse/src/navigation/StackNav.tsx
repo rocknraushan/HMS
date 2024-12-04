@@ -1,72 +1,40 @@
-import React from 'react';
-import {StyleSheet, TouchableOpacity} from 'react-native';
-// import {useSelector} from 'react-redux';
-import {RootStackParamList} from './navStrings';
-import {useNavigation} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import VectorIcons, {IconSets} from '../components/Icons/VectorIcons';
-import {useUser} from '../context/user';
-import {rspF, rspW} from '../theme/responsive';
-import { Login } from '../screens';
+import React, { useState } from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import { Splash, Login } from '../screens';
 import SignupScreen from '../screens/auth/register/SignupScreen';
+import BottomNav from './BottomNav';
 
-const header = {headerShown: false};
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator();
 
 const StackNav = () => {
-  //   const user_loggined = useSelector(state => state.auth.user_loggined);
-
-  const {theme} = useUser();
   const navigation = useNavigation();
+
+  const handleSplashAnimationEnd = (screen: string) => {
+    if (screen === 'LOGIN') {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'LOGIN' }],
+      });
+    } else if (screen === 'BOTTOMTAB') {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'BOTTOMTAB' }],
+      });
+    }
+  };
+  
+
   return (
-    <Stack.Navigator
-      screenOptions={{
-        animationEnabled: true,
-        cardOverlayEnabled: true,
-        // presentation: 'modal',
-        headerTitleAlign: 'center',
-        headerTitleStyle: {
-          color: '#000',
-          fontSize: Math.round(rspF(20)),
-        },
-        headerLeft: () => {
-          return (
-            <TouchableOpacity
-              style={{
-                padding: 4,
-              }}
-              onPress={() => navigation.goBack()}>
-              <VectorIcons
-                name="arrow-back-ios"
-                color={'#000'}
-                size={rspW(24)}
-                iconSet={IconSets.MaterialIcons}
-              />
-            </TouchableOpacity>
-          );
-        },
-      }}
-    >
-      <Stack.Screen
-        name={'LOGIN'}
-        component={Login}
-        options={{
-          headerTitle: '',
-          headerShown:false
-        }}
-      />
-      <Stack.Screen
-        name={'SIGNUP'}
-        component={SignupScreen}
-        options={{
-          headerTitle: '',
-          headerShown:false
-        }}
-      />
+    <Stack.Navigator screenOptions={{ headerShown: false,animation:'default' }}>
+      <Stack.Screen name="SPLASH" options={{navigationBarColor:'#fff',navigationBarTranslucent:true}}>
+        {(props) => <Splash {...props} onAnimationEnd={handleSplashAnimationEnd} />}
+      </Stack.Screen>
+      <Stack.Screen name="LOGIN" component={Login} />
+      <Stack.Screen name="SIGNUP" component={SignupScreen} />
+      <Stack.Screen name="BOTTOMTAB" component={BottomNav} options={{navigationBarColor:'#fff',navigationBarTranslucent:true}} />
     </Stack.Navigator>
   );
 };
 
 export default StackNav;
-
-const styles = StyleSheet.create({});

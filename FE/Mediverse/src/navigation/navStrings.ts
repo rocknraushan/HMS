@@ -28,7 +28,8 @@ export type RootStackParamList = {
   PLACE_ORDER_STEPS: {data: HomePosts, item: PostDetailsType, prod: CombinedProduct[], orderData: Order};
   SELECT_ADDRESS: {onSelect: (item: Address) => void};
   FILTER_BRAND: {hideSeller?: boolean; onSelect?: (items: string[]) => void};
-  SIGNUP:undefined
+  SIGNUP:undefined;
+  BOTTOMTAB:undefined;
 
   //Create Post
   CHOOSE_TEMPLATE: undefined;
@@ -67,5 +68,6 @@ export type RootStackParamList = {
 export const navStrings = {
   SPLASH: 'SPLASH',
   SIGNUP:'SIGNUP',
-  LOGIN:'LOGIN'
+  LOGIN:'LOGIN',
+  BOTTOMTAB:'BOTTOMTAB'
 };
