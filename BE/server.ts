@@ -5,6 +5,9 @@ import connectDB from './src/config/db';
 import patientRoutes from './src/routes/PateintRoutes';
 import doctorRoutes from './src/routes/doctorRoutes';
 import appointmentRoutes from './src/routes/appointmentRoutes';
+import bodyParser from 'body-parser';
+import adminRoutes from './src/routes/admin';
+import authRoutes from './src/routes/auth';
 
 dotenv.config();
 connectDB();
@@ -16,6 +19,9 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use(bodyParser.json());
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
