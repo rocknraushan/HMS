@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { navStrings } from '../../../navigation/navStrings';
+import { NavigationAction, NavigationProp, ParamListBase, useNavigation } from '@react-navigation/native';
+import { navStrings, RootStackParamList } from '../../../navigation/navStrings';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import Config from 'react-native-config';
 
 const { height, width } = Dimensions.get('window');
 
-const LoginScreen = () => {
+type Props = {
+  navigation: NavigationProp<RootStackParamList, 'LOGIN'>
+}
+
+const LoginScreen = (props: Props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const navigation = useNavigation();
 
   const handleLogin = () => {
     console.log('Email:', email);
     console.log('Password:', password);
-    navigation.navigate(navStrings.BOTTOMTAB)
-    AsyncStorage.setItem('Login',JSON.stringify(true))
+    axios.post(Config.BASE_URL + "/login", {
+      email: email,
+      password: password
+    })
+    props.navigation.navigate("BOTTOMTAB");
   };
 
   return (
@@ -50,7 +58,7 @@ const LoginScreen = () => {
       </TouchableOpacity>
 
       {/* Signup Link */}
-      <TouchableOpacity onPress={() => navigation.navigate(navStrings.SIGNUP)}>
+      <TouchableOpacity onPress={() => props.navigation.navigate("SIGNUP")}>
         <Text style={styles.link}>Don't have an account? Sign Up</Text>
       </TouchableOpacity>
 

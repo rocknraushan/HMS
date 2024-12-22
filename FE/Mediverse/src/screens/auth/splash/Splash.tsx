@@ -12,7 +12,7 @@ import { rspH, rspW } from '../../../theme/responsive';
 
 const { width, height } = Dimensions.get('window');
 
-const Splash = ({ onAnimationEnd }: { onAnimationEnd: (screen: string) => void;  }) => {
+const Splash = ({ navigation }: any) => {
   const scale = useSharedValue(0);
 
   useEffect(() => {
@@ -22,16 +22,16 @@ const Splash = ({ onAnimationEnd }: { onAnimationEnd: (screen: string) => void; 
         const isLoggedIn = value !== null ? JSON.parse(value) : false;
 
         if (isLoggedIn) {
-          onAnimationEnd('BOTTOMTAB');
+          navigation.navigate('BOTTOMTAB');
         } else {
-          onAnimationEnd('LOGIN');
+          navigation.navigate('WELCOME');
         }
       } catch (error) {
         console.error('Error checking login state:', error);
       }
     };
     scale.value = withTiming(1, { duration: 2000 }, () => {
-      runOnJS(checkLoginState)(); 
+      runOnJS(checkLoginState)();
     });
   }, []);
 
@@ -42,7 +42,7 @@ const Splash = ({ onAnimationEnd }: { onAnimationEnd: (screen: string) => void; 
   });
 
   return (<>
-  <StatusBar hidden />
+    <StatusBar hidden />
     <ImageBackground source={splashBG} style={styles.container}>
       <Animated.View style={[styles.circle, animatedStyle]}>
         <Image source={splash} style={styles.image} resizeMode="contain" />
