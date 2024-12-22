@@ -6,6 +6,7 @@ import { setNetConnet } from './src/Redux/reducers/screensR/screensR';
 import Toast from 'react-native-toast-message';
 import { useDispatch } from 'react-redux';
 import defaultTheme, { light_theme, dark_theme, Theme } from './src/theme/colors';
+import { View } from 'react-native';
 
 
 export const ThemeContext = createContext<{
@@ -13,7 +14,7 @@ export const ThemeContext = createContext<{
   toggleTheme: () => void;
 }>({
   theme: defaultTheme,
-  toggleTheme: () => {},
+  toggleTheme: () => { },
 });
 
 const App = () => {
@@ -36,9 +37,9 @@ const App = () => {
     return () => unsubscribe();
   }, []);
 
-  
+
   const toggleTheme = () => {
-    setTheme((prevTheme:any) => (prevTheme === light_theme ? dark_theme : light_theme));
+    setTheme((prevTheme: any) => (prevTheme === light_theme ? dark_theme : light_theme));
   };
 
   return (

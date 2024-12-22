@@ -1,21 +1,36 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { navStrings } from '../../../navigation/navStrings';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert } from 'react-native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { navStrings, RootStackParamList } from '../../../navigation/navStrings';
+import axios from 'axios';
+import Config from 'react-native-config';
 
 const { height, width } = Dimensions.get('window');
 
-const SignupScreen = () => {
+type Props = {
+  navigation: NavigationProp<RootStackParamList, 'SIGNUP'>
+
+}
+const SignupScreen = (props: Props) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const navigation = useNavigation();
-
   const handleSignup = () => {
-    console.log('Username:', username);
+    console.log('Username:', username, Config.BASE_URL);
     console.log('Email:', email);
     console.log('Password:', password);
+    axios.post(Config.BASE_URL + "api/auth/register", {
+      email: email,
+      password: password,
+      role: 'patient',
+      name: username
+    }).then((res) => {
+      console.log(res, "registeration tesponse");
+      Alert.alert("Sucees")
+    }).catch(e => {
+      console.log(e)
+    })
   };
 
   return (
@@ -52,7 +67,7 @@ const SignupScreen = () => {
       <TouchableOpacity style={styles.button} onPress={handleSignup}>
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate(navStrings.LOGIN)}>
+      <TouchableOpacity onPress={() => props.navigation.navigate("LOGIN")}>
         <Text style={styles.link}>Already have an account? Login</Text>
       </TouchableOpacity>
     </View>

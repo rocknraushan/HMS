@@ -1,16 +1,23 @@
 // In App.js in a new project
 
-import {NavigationContainer} from '@react-navigation/native';
+import { LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import * as React from 'react';
 import StackNav from './StackNav';
-import UserProvider from '../context/user';
-import { Provider } from 'react-redux';
-import { store } from '../Redux/store';
 
 function Navigation() {
+  let routeParams: LinkingOptions<ReactNavigation.RootParamList> = {
+    prefixes: ['myapp://', 'https://myapp.com'], // Define your deep linking prefixes
+    config: {
+      screens: {
+        Home: 'home', // Maps the "Home" route to "myapp://home" or "https://myapp.com/home"
+        Profile: 'profile/:id', // Maps to "myapp://profile/123" with dynamic parameters
+      }
+    },
+  };
+
   return (
-    <NavigationContainer>
-            <StackNav />
+    <NavigationContainer linking={routeParams}>
+      <StackNav />
     </NavigationContainer>
 
   );

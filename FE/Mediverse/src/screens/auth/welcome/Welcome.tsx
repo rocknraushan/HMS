@@ -1,31 +1,53 @@
-import React, { useState } from 'react';
-import { Image, LayoutAnimation, StatusBar, StyleSheet, Text, View } from 'react-native';
-import { rspF, rspH, rspW } from '../../../theme/responsive';
+import React, { useRef, useState } from 'react';
+import { FlatList, Image, LayoutAnimation, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { rspF, rspH, rspW, scrn_height, scrn_width } from '../../../theme/responsive';
 import fontFM from '../../../theme/fontFM';
 import CButton from '../../../components/CustomButton/CButton';
-import welcomeScreens from '../../../data/welcomescr_data';
+import { welcomeScreens, WelconDataType } from '../../../data/welcomescr_data';
 import FastImage from 'react-native-fast-image';
 import Toast from 'react-native-toast-message';
 import { useNavigation } from '@react-navigation/native';
 import { navStrings } from '../../../navigation/navStrings';
+import LandingScreen from './component/LandingScreen';
+import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 
-const Welcome = () => {
-  const navigation = useNavigation()
-  const [currentScreen, setCurrentScreen] = useState(0);
+type Props = {
+  navigation: any,
+  route: any
+}
+const Welcome = ({ navigation, route }: Props) => {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const scrollX = useSharedValue(0);
+  const flatlistRef = useRef<FlatList>(null)
+  const renderDot = (index: number) => {
+    const animatedDotStyle = useAnimatedStyle(() => {
+      const distanceFromCenter = Math.abs(scrollX.value - index * scrn_width); // Distance from the center of the screen
 
-  const handleNext = () => {
-    if (currentScreen < welcomeScreens.length - 1) {
-        LayoutAnimation.easeInEaseOut()
-      setCurrentScreen(currentScreen + 1);
-    } else {
-      console.log('Navigate to the main app');
-      Toast.show({text1:'Login screen',})
-      navigation.navigate(navStrings.LOGIN)
-      
-    }
+      // Interpolate the size of the dot based on how far it is from the center
+      const dotSize = interpolate(
+        distanceFromCenter,
+        [0, scrn_width], // Closer to the current index (0) -> bigger size, farther away -> smaller size
+        [20, 10], // Output size range
+        'clamp'
+      );
+
+      return {
+        width: withSpring(dotSize),
+        backgroundColor: "#26232F",
+        opacity: currentIndex == index ? withTiming(1) : withTiming(0.5)
+      };
+    });
+    return <Animated.View key={index} style={[styles.dot, animatedDotStyle]} />;
   };
 
-  const { title, description, image, buttonText } = welcomeScreens[currentScreen];
+  const handleNextPress = () => {
+    if (currentIndex < welcomeScreens.length - 1) {
+      flatlistRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
+      setCurrentIndex((prev) => prev + 1); // Update the current index
+    } else {
+      navigation.navigate(navStrings.LOGIN)
+    }
+  };
 
   return (
     <View style={styles.cont}>
@@ -34,23 +56,32 @@ const Welcome = () => {
         backgroundColor="transparent"
         barStyle="dark-content"
       />
-      <FastImage source={image} style={styles.img_cont} resizeMode="cover" />
-      <View style={styles.content_cont}>
-        <View style={styles.content}>
-          <Text style={styles.cont_heading}>{title}</Text>
-          <Text style={styles.cont_subtext}>{description}</Text>
-        </View>
-        <View style={styles.dotsContainer}>
-          {welcomeScreens.map((_, index) => (
-            <View key={index} style={[styles.dot, currentScreen === index && styles.activeDot]} />
-          ))}
-        </View>
-        <CButton
-          extraStyle={{ marginTop: rspH(24) }}
-          title={buttonText}
-          onPress={handleNext}
+      <View style={{ height: '70%' }}>
+
+        <FlatList
+          ref={flatlistRef}
+          data={welcomeScreens}
+          horizontal
+          pagingEnabled
+          renderItem={({ item, index }: { item: WelconDataType, index: number }) => <LandingScreen index={index} item={item} />}
+          keyExtractor={(item, inex) => item.id.toString()}
+          onScroll={(event) => {
+            scrollX.value = event.nativeEvent.contentOffset.x;
+            const index = Math.round(event.nativeEvent.contentOffset.x / scrn_width);
+            setCurrentIndex(index);
+          }}
+          contentContainerStyle={{ flexGrow: 1 }}
         />
       </View>
+      <View style={styles.dotsContainer}>
+        {welcomeScreens.map((_, index) => renderDot(index))}
+      </View>
+
+      <CButton
+        extraStyle={{ marginTop: rspH(24), alignSelf: "center" }}
+        title={"Next"}
+        onPress={() => handleNextPress()}
+      />
     </View>
   );
 };
@@ -106,10 +137,5 @@ const styles = StyleSheet.create({
     borderRadius: rspW(5),
     backgroundColor: '#9B9B9B',
     marginHorizontal: rspW(5),
-  },
-  activeDot: {
-    backgroundColor: '#26232F',
-    width: rspW(30),
-    height: rspH(8),
-  },
+  }
 });

@@ -1,19 +1,26 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native";
 import React, { memo } from "react";
 import { rspF, rspH, rspW } from "../../theme/responsive";
 import colors from "../../theme/colors";
 import gStyles from "../../gStyles/gStyles";
 import { moderateScale } from "react-native-size-matters";
 import fontFM from "../../theme/fontFM";
-
+type Props = {
+  title: string;
+  onPress: () => void;
+  extraStyle?: ViewStyle,
+  extraStyleTxt?: TextStyle,
+  disabled?: boolean,
+  outlined?: boolean,
+}
 const CButton = ({
   title = "",
-  onPress = () => {},
+  onPress = () => { },
   extraStyle = {},
   extraStyleTxt = {},
   disabled = false,
   outlined = false,
-}) => {
+}: Props) => {
   return (
     <TouchableOpacity
       activeOpacity={0.5}
@@ -21,8 +28,8 @@ const CButton = ({
         backgroundColor: disabled
           ? colors.grey300
           : outlined
-          ? colors.lightTeal
-          : colors.midnightBlue,
+            ? colors.lightTeal
+            : colors.midnightBlue,
         borderWidth: outlined ? rspW(1) : 0,
 
         ...styles.btnCont,
