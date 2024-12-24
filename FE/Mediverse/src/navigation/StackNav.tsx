@@ -16,10 +16,10 @@ const StackNav = () => {
       <Stack.Screen name="SPLASH" options={{ navigationBarColor: '#000', navigationBarTranslucent: true, navigationBarHidden: true }}>
         {(props) => <Splash {...props} />}
       </Stack.Screen>
-      <Stack.Screen name="LOGIN" component={Login} />
-      <Stack.Screen name="SIGNUP" component={SignupScreen} />
-      <Stack.Screen name='WELCOME' component={Welcome} options={{ navigationBarColor: '#fff', navigationBarTranslucent: true }} />
-      <Stack.Screen name="BOTTOMTAB" component={BottomNav} options={{ navigationBarColor: '#fff', navigationBarTranslucent: true }} />
+      <Stack.Screen name="LOGIN" component={Login} options={{ navigationBarColor: '#f8f8f8', statusBarStyle: "dark", statusBarBackgroundColor: "#f8f8f8" }} />
+      <Stack.Screen name="SIGNUP" component={SignupScreen} options={{ navigationBarColor: '#f8f8f8', statusBarStyle: "dark", statusBarBackgroundColor: "#f8f8f8" }} />
+      <Stack.Screen name='WELCOME' component={Welcome} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true }} />
+      <Stack.Screen name="BOTTOMTAB" component={BottomNav} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true }} />
     </Stack.Navigator>
   );
 };

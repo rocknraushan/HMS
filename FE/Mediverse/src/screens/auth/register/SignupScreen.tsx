@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, Image, ScrollView } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { navStrings, RootStackParamList } from '../../../navigation/navStrings';
 import axios from 'axios';
 import Config from 'react-native-config';
+import getAxiosClient from '../../../HttpService/AxiosClient';
+import { Services } from '../../../HttpService';
+import CustomInput from '../../../components/CustomInput/CustomInput';
+import { Icons } from '../../../assets/icons';
 
 const { height, width } = Dimensions.get('window');
 
@@ -16,60 +20,87 @@ const SignupScreen = (props: Props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
     console.log('Username:', username, Config.BASE_URL);
     console.log('Email:', email);
     console.log('Password:', password);
-    axios.post(Config.BASE_URL + "api/auth/register", {
-      email: email,
-      password: password,
-      role: 'patient',
-      name: username
-    }).then((res) => {
-      console.log(res, "registeration tesponse");
-      Alert.alert("Sucees")
-    }).catch(e => {
-      console.log(e)
-    })
+
+    try {
+      const client = await getAxiosClient();
+      const response = await client.post(Services.REGISTER, {
+        email: email,
+        password: password,
+        role: Services.ROLE.PATIENT,
+        name: username,
+      });
+      console.log(response, 'Registration response');
+      Alert.alert('Success');
+    } catch (error: any) {
+      console.log('Registration error:', error);
+      if (error?.response?.status == 400) {
+        Alert.alert("Error", error.response.data.message)
+      }
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create an Account</Text>
-      <Text style={styles.subtitle}>Please sign up to continue</Text>
+      <ScrollView keyboardShouldPersistTaps="always" keyboardDismissMode='on-drag' automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 120 }}>
+        <Image source={Icons.appLogo} style={{ width: 100, height: 100, resizeMode: 'contain', alignSelf: 'center', marginVertical: 10 }} />
 
-      {/* Username Input */}
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        placeholderTextColor="#888"
-        value={username}
-        onChangeText={setUsername}
-      />
+        <Text style={styles.title}>Create an Account</Text>
+        <Text style={styles.subtitle}>Please sign up to continue</Text>
 
-      {/* Email Input */}
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#888"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#888"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <TouchableOpacity style={styles.button} onPress={handleSignup}>
-        <Text style={styles.buttonText}>Sign Up</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => props.navigation.navigate("LOGIN")}>
-        <Text style={styles.link}>Already have an account? Login</Text>
-      </TouchableOpacity>
+        {/* Username Input */}
+        <CustomInput
+          value={username}
+          onChangeText={setUsername}
+          placeholder='Your name'
+          leftIcon={
+            <Image source={Icons.userIcon} style={styles.iconStyle} />
+          }
+          error=''
+        />
+
+        {/* Email Input */}
+        <CustomInput
+          extra={
+            {
+              keyboardType: "email-address",
+              inputMode: "email"
+            }
+          }
+          leftIcon={
+            <Image source={Icons.smsIcon} style={styles.iconStyle} />
+          }
+          error=''
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <CustomInput
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          extra={
+            {
+              keyboardType: "visible-password",
+              inputMode: "text"
+            }
+          }
+          isPassword
+          error=''
+          leftIcon={
+            <Image source={Icons.lockIcon} style={styles.iconStyle} />
+          }
+        />
+        <TouchableOpacity style={styles.button} onPress={handleSignup}>
+          <Text style={styles.buttonText}>Sign Up</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => props.navigation.navigate("LOGIN")}>
+          <Text style={styles.link}>Already have an account? Login</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 };
@@ -80,6 +111,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
     backgroundColor: '#f8f8f8',
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+    resizeMode: "contain",
+    marginEnd: 8,
   },
   title: {
     fontSize: 32,
@@ -105,7 +142,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   button: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#1C2A3A',
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
