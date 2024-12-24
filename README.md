@@ -65,7 +65,7 @@ A comprehensive Hospital Management System built using **React Native** for the 
 1. Clone the repository:
    ```bash
    git clone https://github.com/your-repo/hospital-management-system.git
-   cd hospital-management-system/backend
+   cd HMS/BE
    ```
 
 2. Install dependencies:
@@ -87,9 +87,9 @@ A comprehensive Hospital Management System built using **React Native** for the 
 
 ### Frontend Setup
 
-1. Navigate to the mobile directory:
+1. Navigate to the MOBILE directory:
    ```bash
-   cd ../mobile
+   cd ../FE/Mediverse
    ```
 
 2. Install dependencies:
