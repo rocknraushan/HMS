@@ -64,7 +64,7 @@ A comprehensive Hospital Management System built using **React Native** for the 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/hospital-management-system.git
+   git clone https://github.com/rocknraushan/HMS.git
    cd HMS/BE
    ```
 
