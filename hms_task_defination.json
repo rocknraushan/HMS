@@ -1,5 +1,5 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:eu-north-1:539247482880:task-definition/hms_task_defination:1",
+    "taskDefinitionArn": "arn:aws:ecs:eu-north-1:539247482880:task-definition/hms_task_defination:4",
     "containerDefinitions": [
         {
             "name": "hms-backend",
@@ -7,7 +7,7 @@
             "cpu": 0,
             "portMappings": [
                 {
-                    "name": "hms-backend-5000-tcp",
+                    "name": "nodejs-port",
                     "containerPort": 5000,
                     "hostPort": 5000,
                     "protocol": "tcp",
@@ -15,7 +15,32 @@
                 }
             ],
             "essential": true,
-            "environment": [],
+            "environment": [
+                {
+                    "name": "EMAIL_PASS",
+                    "value": "vvfx kwve agnh fgiu"
+                },
+                {
+                    "name": "EMAIL_USER",
+                    "value": "raushan.businessofficial@gmail.com"
+                },
+                {
+                    "name": "PORT",
+                    "value": "5000"
+                },
+                {
+                    "name": "FRONTEND_APP_URL",
+                    "value": "mediverse://"
+                },
+                {
+                    "name": "JWT_SECRET",
+                    "value": "0b3e6d5935fa40eec3d5bf9f1c12c0829f969b1a7b8f4ad35b2c012b39c43f4d5f08c6adddd590a69d05e2f325c45bdc6a78fb76da2bd844a9547dd9945cf2f5"
+                },
+                {
+                    "name": "MONGO_URI",
+                    "value": "mongodb+srv://raushanrkp1:8tmvJiljLIOk3bv6@cluster0.xgwvf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+                }
+            ],
             "environmentFiles": [],
             "mountPoints": [],
             "volumesFrom": [],
@@ -39,7 +64,7 @@
     "taskRoleArn": "arn:aws:iam::539247482880:role/ecsTaskExecutionRole",
     "executionRoleArn": "arn:aws:iam::539247482880:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
-    "revision": 1,
+    "revision": 4,
     "volumes": [],
     "status": "ACTIVE",
     "requiresAttributes": [
@@ -88,7 +113,7 @@
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
     },
-    "registeredAt": "2025-01-05T17:12:59.245Z",
+    "registeredAt": "2025-01-05T19:18:42.044Z",
     "registeredBy": "arn:aws:iam::539247482880:root",
     "tags": []
 }
