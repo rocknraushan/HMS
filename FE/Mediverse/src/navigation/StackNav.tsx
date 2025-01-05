@@ -4,6 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import { Splash, Login, Welcome } from '../screens';
 import SignupScreen from '../screens/auth/register/SignupScreen';
 import BottomNav from './BottomNav';
+import ChangePasswordScreen from '../screens/auth/register/ChangePasswordScreen';
+import ForgetPassword from '../screens/auth/register/ForgetPassword';
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +22,8 @@ const StackNav = () => {
       <Stack.Screen name="SIGNUP" component={SignupScreen} options={{ navigationBarColor: '#f8f8f8', statusBarStyle: "dark", statusBarBackgroundColor: "#f8f8f8" }} />
       <Stack.Screen name='WELCOME' component={Welcome} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true }} />
       <Stack.Screen name="BOTTOMTAB" component={BottomNav} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true }} />
+      <Stack.Screen name="ForgetPassword" component={ForgetPassword} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true }} />
+      <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true }} />
     </Stack.Navigator>
   );
 };

@@ -7,6 +7,8 @@ export interface IUser extends Document {
   password: string;
   role: "doctor" | "nurse" | "admin" | "patient";
   matchPassword(enteredPassword: string): Promise<boolean>;
+  resetPasswordToken: string;
+  resetPasswordExpiry: number;
 }
 
 const userSchema: Schema<IUser> = new Schema({

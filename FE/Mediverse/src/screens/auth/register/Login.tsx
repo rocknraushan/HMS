@@ -9,6 +9,7 @@ import CustomInput from '../../../components/CustomInput/CustomInput';
 import { Icons } from '../../../assets/icons';
 import { Formik, FormikHelpers } from 'formik';
 import * as Yup from 'yup'
+import * as Keychain from 'react-native-keychain';
 
 const { height, width } = Dimensions.get('window');
 const initialVal = {
@@ -17,7 +18,7 @@ const initialVal = {
 }
 const validationSchema = Yup.object().shape({
   email: Yup.string().email("Enter a valid email").required("Email required"),
-  password: Yup.string().required("Password is required").min(6, "Password must be of 6 characters")
+  password: Yup.string().required("Password is required").min(5, "Password must be of 6 characters")
 })
 type Props = {
   navigation: NavigationProp<RootStackParamList, 'LOGIN'>
@@ -38,23 +39,32 @@ const LoginScreen = (props: Props) => {
     try {
       const client = await getAxiosClient();
       const response = await client.post(Services.LOGIN, {
-        email: email,
-        password: password
+        email: values.email,
+        password: values.password
       });
-      console.log(response, 'Registration response');
-      if (response.data.token) {
-        await Storage.setToken(response.data.token);
+      console.log(response.data, 'Registration response');
+      if (response.data) {
+        try {
+          await Keychain.setGenericPassword("token", response.data.token);
+
+        } catch (error) {
+          console.log(error, "error in setting token")
+        }
         props.navigation.reset({
           index: 0,
           routes: [{ name: 'BOTTOMTAB' }]
         })
       }
     } catch (error: any) {
-      console.error('Registration error:', error);
-      if (error.response.data.errors)
-        helpers.setErrors(error.response.data.errors)
+      console.error('Registration error:', error.response.data);
+      if (error.response.data)
+        helpers.setErrors(error.response.data)
     }
   };
+
+  const onForgetPress = () => {
+    props.navigation.navigate("ForgetPassword")
+  }
 
   return (
     <View style={styles.container}>
@@ -128,7 +138,7 @@ const LoginScreen = (props: Props) => {
         </TouchableOpacity>
 
         {/* Forgot Password Link */}
-        <TouchableOpacity>
+        <TouchableOpacity onPress={onForgetPress}>
           <Text style={styles.forgotPassword}>Forgot Password?</Text>
         </TouchableOpacity>
       </ScrollView>

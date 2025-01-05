@@ -1,16 +1,17 @@
 import axios from 'axios';
 import Storage from '../storage/Storage';
 import Config from 'react-native-config';
+import * as Keychain from 'react-native-keychain';
 
 export const BASE_URL =
   // Config.BASE_URL;
-  "http://192.168.82.202:5001"
+  "http://192.168.174.207:5001"
 
 const getAxiosClient = async () => {
   // Create a new Axios instance
   const client = axios.create({
     baseURL: BASE_URL,
-    timeout: 1000 * 60, // Request timeout (60 seconds)
+    timeout: 1000 * 60,
     headers: {
       // Uncomment if needed, but be cautious with CORS issues in development
       // 'Access-Control-Allow-Origin': '*',
@@ -19,10 +20,17 @@ const getAxiosClient = async () => {
 
   // Add a request interceptor
   client.interceptors.request.use(async (request) => {
-    const token = await Storage.getToken(); // Fetch token from storage
-    if (token) {
-      request.headers.Authorization = `Bearer ${token}`; // Attach token to Authorization header
+    try {
+      const user = await Keychain.getGenericPassword();
+      console.log(user, "auth token")
+      if (user) {
+        request.headers.Authorization = `Bearer ${user.password}`;
+      }
+    } catch (error) {
+      console.log(error, "error in key")
     }
+
+
 
     console.log(
       'API REQUEST====>',

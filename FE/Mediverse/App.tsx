@@ -1,12 +1,12 @@
 import NetInfo from '@react-native-community/netinfo';
 import _ from 'lodash';
-import React, { useEffect, useState, createContext, useContext } from 'react';
+import React, { useEffect, useState, createContext } from 'react';
 import Navigation from './src/navigation/Route';
 import { setNetConnet } from './src/Redux/reducers/screensR/screensR';
 import Toast from 'react-native-toast-message';
 import { useDispatch } from 'react-redux';
 import defaultTheme, { light_theme, dark_theme, Theme } from './src/theme/colors';
-import { View } from 'react-native';
+import { Linking } from 'react-native';
 
 
 export const ThemeContext = createContext<{
@@ -36,7 +36,6 @@ const App = () => {
     const unsubscribe = NetInfo.addEventListener(debounceHandleNet);
     return () => unsubscribe();
   }, []);
-
 
   const toggleTheme = () => {
     setTheme((prevTheme: any) => (prevTheme === light_theme ? dark_theme : light_theme));
