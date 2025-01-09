@@ -1,0 +1,36 @@
+name: React Native CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  react-native:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+      working-directory: ./react-native-app
+
+    - name: Run Linter
+      run: npm run lint
+      working-directory: ./react-native-app
+
+    - name: Run Unit Tests
+      run: npm test
+      working-directory: ./react-native-app
+
+    - name: Build Android
+      run: |
+        cd react-native-app/android
+        ./gradlew assembleRelease
