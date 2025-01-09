@@ -29,5 +29,5 @@ jobs:
 
     - name: Build Android
       run: |
-        cd react-native-app/android
+        cd FE/Mediverse/android
         ./gradlew assembleRelease
