@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { memo, ReactNode, useState } from 'react';
 import { TextInput, StyleSheet, View, Text, StyleProp, TextStyle, ViewStyle, Image, TextInputProps, Pressable } from 'react-native';
 import colors from '../../theme/colors'
 import { Icons } from '../../assets/icons';
@@ -27,7 +27,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
   isPassword,
   leftIcon
 }) => {
-  const [hide, setHide] = useState(false);
+  const [hide, setHide] = useState(true);
   return (
     <Animated.View style={[styles.containor, containerStyle]}>
       <View style={[styles.inputWraper, error && styles.errorInput]}>
@@ -42,11 +42,11 @@ const CustomInput: React.FC<CustomInputProps> = ({
           {
           ...extra
           }
-          secureTextEntry={hide}
+          secureTextEntry={isPassword && hide}
         />
         {isPassword &&
           <Pressable style={{ alignItems: 'center', justifyContent: "center" }} onPress={() => setHide(!hide)}>
-            <Image source={hide ? Icons.eyeOpenIcon : Icons.eyeCloseIcon} style={{ tintColor: "#9CA3AF", width: 20, height: 20, resizeMode: "cover", marginEnd: 8 }} />
+            <Image source={!hide ? Icons.eyeOpenIcon : Icons.eyeCloseIcon} style={{ tintColor: "#9CA3AF", width: 20, height: 20, resizeMode: "cover", marginEnd: 8 }} />
           </Pressable>}
       </View>
       {error && <Animated.Text entering={FadeIn} exiting={FadeOut} style={styles.errorText}>{error}</Animated.Text>}
@@ -86,4 +86,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomInput;
+export default memo(CustomInput);

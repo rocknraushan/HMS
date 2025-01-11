@@ -10,6 +10,8 @@ import { Icons } from '../../../assets/icons';
 import { Formik, FormikHelpers } from 'formik';
 import * as Yup from 'yup'
 import * as Keychain from 'react-native-keychain';
+import GenericLoader from '../../../components/loaders/GenericLoader';
+import PromiseButton from '../../../components/CustomButton/PromiseButton';
 
 const { height, width } = Dimensions.get('window');
 const initialVal = {
@@ -69,8 +71,9 @@ const LoginScreen = (props: Props) => {
   return (
     <View style={styles.container}>
       <ScrollView keyboardShouldPersistTaps="always" keyboardDismissMode='on-drag' automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 120 }}>
-        <Image source={Icons.appLogo} style={{ width: 100, height: 100, resizeMode: 'contain', alignSelf: 'center', marginVertical: 10 }} />
-        <Text style={styles.title}>Welcome Back</Text>
+        <Image source={Icons.appLogo} style={{ width: 100, height: 100, resizeMode: 'contain', alignSelf: 'center', marginTop: 10 }} />
+        <Text style={{ fontFamily: "Poppins", fontSize: 20, color: "#999", alignSelf: 'center', textAlign: 'center' }}>Medi<Text style={{ color: "#111928" }}>verse</Text></Text>
+        <Text style={styles.title}>Hi, Welcome Back</Text>
         <Text style={styles.subtitle}>Hope you are doing fine</Text>
         <Formik
           initialValues={initialVal}
@@ -81,7 +84,8 @@ const LoginScreen = (props: Props) => {
             handleChange,
             errors,
             touched,
-            handleSubmit
+            handleSubmit,
+            isSubmitting
           }) => {
             return (
               <>
@@ -121,9 +125,7 @@ const LoginScreen = (props: Props) => {
                 />
 
                 {/* Login Button */}
-                <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
-                  <Text style={styles.buttonText}>Login</Text>
-                </TouchableOpacity>
+                <PromiseButton onPress={handleSubmit} text="Login" loading={isSubmitting} />
               </>
             )
           }}
@@ -134,7 +136,7 @@ const LoginScreen = (props: Props) => {
         </View>
         {/* Signup Link */}
         <TouchableOpacity onPress={() => props.navigation.navigate("SIGNUP")}>
-          <Text style={styles.link}>Don't have an account? Sign Up</Text>
+          <Text style={styles.link}>Don't have an account? <Text style={{ color: "#1C64F2" }}>Sign Up</Text></Text>
         </TouchableOpacity>
 
         {/* Forgot Password Link */}
@@ -202,7 +204,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#1C2A3A',
     paddingVertical: 15,
-    borderRadius: 10,
+    borderRadius: 30,
     alignItems: 'center',
     marginBottom: 15,
   },
@@ -212,14 +214,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   link: {
-    color: '#4CAF50',
+    color: '#6B7280',
     textAlign: 'center',
     fontSize: 14,
   },
   forgotPassword: {
-    color: '#4CAF50',
+    color: '#1C64F2',
     textAlign: 'center',
     fontSize: 14,
+    marginTop: 20
   },
 });
 

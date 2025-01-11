@@ -27,11 +27,12 @@ jobs:
       working-directory: ./FE/Mediverse
       continue-on-error: true
 
-    - name: Grant execute permissions for gradlew
-      run: chmod +x ./android/gradlew
-      working-directory: ./FE/Mediverse
+    # - name: Grant execute permissions for gradlew
+    #   run: chmod +x ./android/gradlew
+    #   working-directory: ./FE/Mediverse
 
     - name: Build Android
       run: |
         cd FE/Mediverse/android
+        chmod +x gradlew
         ./gradlew assembleRelease
