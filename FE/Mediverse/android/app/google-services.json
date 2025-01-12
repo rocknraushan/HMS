@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "126389086743",
+    "project_id": "mediverse-6f811",
+    "storage_bucket": "mediverse-6f811.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:126389086743:android:e843cfdd84e88c49478a52",
+        "android_client_info": {
+          "package_name": "com.mediverse"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMbqtotAyjOGCV0nu5ZJCeGt49p0L8vTw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

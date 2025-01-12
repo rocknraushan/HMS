@@ -70,6 +70,7 @@ const Welcome = ({ navigation, route }: Props) => {
             const index = Math.round(event.nativeEvent.contentOffset.x / scrn_width);
             setCurrentIndex(index);
           }}
+          style={{ height: '100%' }}
           contentContainerStyle={{ flexGrow: 1 }}
         />
       </View>
