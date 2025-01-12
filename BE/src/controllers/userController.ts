@@ -3,11 +3,14 @@ import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/User";
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
+import DeviceToken from "../models/devices";
+import * as admin from 'firebase-admin';
 
 const FRONTEND_APP_URL = process.env.FRONTEND_APP_URL || 'mediverse://';
 
 export async function createUser(req: Request, res: Response): Promise<any> {
-  const { name, email, password, role } = req.body;
+  console.log('request body', req.body);
+  const { name, email, password, role, deviceToken, plateform } = req.body;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -19,6 +22,21 @@ export async function createUser(req: Request, res: Response): Promise<any> {
     }
 
     const user = await User.create({ name, email, password, role });
+    if (deviceToken) {
+      const device = await DeviceToken.create({ plateform: plateform, token: deviceToken, user: user._id });
+      await admin.messaging().send({
+        notification: {
+          title: 'Welcome to Mediverse',
+          body: 'You have successfully registered with Mediverse'
+        },
+        token: deviceToken
+      }).then((response) => {
+        console.log('Successfully sent message:', response);
+      }).catch((error) => {
+        console.error('Error sending message:', error);
+      })
+    }
+    await user.save();
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || "", {
       expiresIn: "1h",
     });
