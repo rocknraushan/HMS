@@ -2,6 +2,8 @@ import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcryptjs";
 
 export interface IUser extends Document {
+  firstName: string;
+  lastName: string;
   name: string;
   email: string;
   password: string;
@@ -9,12 +11,18 @@ export interface IUser extends Document {
   matchPassword(enteredPassword: string): Promise<boolean>;
   resetPasswordToken: string;
   resetPasswordExpiry: number;
+  profilePic: string;
+  socialData: Object;
 }
 
 const userSchema: Schema<IUser> = new Schema({
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  profilePic: { type: String, required: false },
+  socialData: { type: Object, required: false },
   role: {
     type: String,
     enum: ["doctor", "nurse", "admin", "patient"],
