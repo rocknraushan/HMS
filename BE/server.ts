@@ -8,6 +8,9 @@ import appointmentRoutes from './src/routes/appointmentRoutes';
 import bodyParser from 'body-parser';
 import adminRoutes from './src/routes/admin';
 import authRoutes from './src/routes/auth';
+import genericRoute from './src/routes/genericRoute'
+import { getApk, uploadApk } from './src/controllers/genericController';
+import { uploadMiddleware } from './src/middleware/uploadMiddleware';
 
 dotenv.config();
 connectDB();
@@ -25,10 +28,49 @@ app.use("/api/admin", adminRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
-
+app.use("api/uploads", genericRoute);
+app.post('/api/upload', uploadMiddleware, uploadApk);
+app.get("/api/uploads/apk/:apkType", getApk);
 // Default Route
 app.get('/', (req, res) => {
-    res.send('Hospital Management Backend is running!');
+    res.send(`
+        <html>
+            <head>
+                <title>Hospital Management System</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #f4f4f4;
+                        margin: 0;
+                        padding: 0;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                    }
+                    .container {
+                        text-align: center;
+                        background: white;
+                        padding: 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                    }
+                    h1 {
+                        color: #333;
+                    }
+                    p {
+                        color: #666;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Welcome to the Hospital Management System</h1>
+                    <p>The backend server is running!</p>
+                </div>
+            </body>
+        </html>
+    `);
 });
 
 // Start Server
