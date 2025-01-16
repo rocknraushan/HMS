@@ -3,11 +3,14 @@ import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/User";
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
+import DeviceToken from "../models/devices";
+import * as admin from 'firebase-admin';
 
 const FRONTEND_APP_URL = process.env.FRONTEND_APP_URL || 'mediverse://';
 
 export async function createUser(req: Request, res: Response): Promise<any> {
-  const { name, email, password, role } = req.body;
+  console.log('request body', req.body);
+  const { name, email, password, role, deviceToken, plateform } = req.body;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -19,6 +22,21 @@ export async function createUser(req: Request, res: Response): Promise<any> {
     }
 
     const user = await User.create({ name, email, password, role });
+    if (deviceToken) {
+      const device = await DeviceToken.create({ plateform: plateform, token: deviceToken, user: user._id });
+      await admin.messaging().send({
+        notification: {
+          title: 'Welcome to Mediverse',
+          body: 'You have successfully registered with Mediverse'
+        },
+        token: deviceToken
+      }).then((response) => {
+        console.log('Successfully sent message:', response);
+      }).catch((error) => {
+        console.error('Error sending message:', error);
+      })
+    }
+    await user.save();
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || "", {
       expiresIn: "1h",
     });
@@ -30,20 +48,38 @@ export async function createUser(req: Request, res: Response): Promise<any> {
 }
 
 export async function userLogin(req: Request, res: Response): Promise<any> {
-  const { email, password } = req.body;
+  const { email, password, loginType, socialData, plateform, deviceToken } = req.body;
 
   try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials", email: "Email not registered" });
+    switch (loginType) {
+      case "google":
+        const socialUser = await User.findOne({ email: socialData.email });
+        if (!socialUser) {
+          const user = await User.create({ socialData:socialData,email:email,password:"", role: "patient" });
+          const device = await DeviceToken.create({ plateform: plateform, token: deviceToken, user: user._id });
+          const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET
+            || "", { expiresIn: "1h" });
+          return res.status(201).json({ token });
+        } else {
+          const token = jwt.sign({ id: socialUser._id, role: socialUser.role }, process.env.JWT_SECRET || "", {
+            expiresIn: "1h",
+          });
+          const device = await DeviceToken.create({ plateform: plateform, token: deviceToken, user: socialUser._id });
+          return res.status(200).json({ token });
+        }
+      default:
+        const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ message: "Invalid credentials", email: "Email not registered" });
 
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) return res.status(400).json({ password: "Incorrect password" });
+        const isMatch = await user.matchPassword(password);
+        if (!isMatch) return res.status(400).json({ password: "Incorrect password" });
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || "", {
-      expiresIn: "1h",
-    });
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || "", {
+          expiresIn: "1h",
+        });
 
-    res.status(200).json({ token });
+        res.status(200).json({ token });
+    }
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }

@@ -33,6 +33,6 @@ export const Icons = {
   smsIcon: require("./sms.png"),
   eyeOpenIcon: require("./eye-open.png"),
   eyeCloseIcon: require("./eye-closed.png"),
-  userIcon: require("./user.png")
-
+  userIcon: require("./user.png"),
+  googleIcon: require("./ic_google.png")
 };

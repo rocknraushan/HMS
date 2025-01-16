@@ -1,9 +1,9 @@
 
-  module.Exports = {
-    assets: ['./assets/fonts/'],
-    project: {
+module.Exports = {
+  assets: ['./assets/fonts/'],
+  project: {
     android: {
-    packageName: 'com.mediverse',
+      packageName: 'com.evaidya',
     },
-   },
-   };
+  },
+};

@@ -15,7 +15,7 @@ const LandingScreen = ({ item, index }: Props) => {
     const { title, description, image } = item;
 
     return (
-        <View style={{ height: '100%' }}>
+        <View style={{ flex: 1 }}>
             <FastImage source={image} style={styles.img_cont} resizeMode="cover" />
             <View style={styles.content_cont}>
                 <View style={styles.content}>
@@ -47,8 +47,8 @@ const styles = StyleSheet.create({
     content: {
         height: 'auto',
         width: '85%',
-        paddingHorizontal: rspW(35),
-        marginTop: rspH(29),
+        paddingHorizontal: 25,
+        marginTop: 20,
         alignItems: 'center',
         alignSelf: 'center',
     },
