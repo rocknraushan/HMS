@@ -1,0 +1,38 @@
+name: React Native CI Pipeline
+
+on:
+  push:
+    branches: ["master"]
+
+jobs:
+  react-native:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+      working-directory: ./FE/Mediverse
+      continue-on-error: true
+
+    - name: Run Unit Tests
+      run: npm test
+      working-directory: ./FE/Mediverse
+      continue-on-error: true
+
+    # - name: Grant execute permissions for gradlew
+    #   run: chmod +x ./android/gradlew
+    #   working-directory: ./FE/Mediverse
+
+    - name: Build Android
+      run: |
+        cd FE/Mediverse/android
+        chmod +x gradlew
+        ./gradlew assembleRelease

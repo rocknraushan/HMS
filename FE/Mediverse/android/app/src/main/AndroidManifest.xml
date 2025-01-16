@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.PERMISSIONS.POST_NOTIFICATIONS" />
 
     <application
       android:name=".MainApplication"
@@ -9,6 +10,7 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
       android:theme="@style/AppTheme"
+      android:usesCleartextTraffic="true"
       android:supportsRtl="true">
       <activity
         android:name=".MainActivity"
@@ -25,11 +27,10 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                
-                <!-- Deep Link Scheme --> 
+
+                <!-- Deep Link Scheme -->
                 <data
                     android:scheme="mediverse"
-                    android:host="reset-password"
                     android:pathPattern="/.*" />
             </intent-filter>
       </activity>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Image, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Image, ScrollView, Platform } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../../navigation/navStrings';
 import getAxiosClient from '../../../HttpService/AxiosClient';
@@ -7,9 +7,13 @@ import { Services } from '../../../HttpService';
 import Storage from '../../../storage/Storage'
 import CustomInput from '../../../components/CustomInput/CustomInput';
 import { Icons } from '../../../assets/icons';
-import { Formik, FormikHelpers } from 'formik';
+import { Formik, FormikHelpers, FormikProps } from 'formik';
 import * as Yup from 'yup'
 import * as Keychain from 'react-native-keychain';
+import GenericLoader from '../../../components/loaders/GenericLoader';
+import PromiseButton from '../../../components/CustomButton/PromiseButton';
+import { CallLoginApi, handleGoogleSignIn } from './AuthHelper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { height, width } = Dimensions.get('window');
 const initialVal = {
@@ -27,21 +31,18 @@ type Props = {
 const LoginScreen = (props: Props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const formikRef = React.useRef<FormikProps<typeof initialVal>>(null);
 
-
-  const handleLogin = async (values: typeof initialVal, helpers: FormikHelpers<{
-    email: string;
-    password: string;
-  }>) => {
+  const handleLogin = async () => {
     console.log('Email:', email);
     console.log('Password:', password);
-
     try {
-      const client = await getAxiosClient();
-      const response = await client.post(Services.LOGIN, {
-        email: values.email,
-        password: values.password
-      });
+      const response = await CallLoginApi({
+        email: formikRef.current?.values.email,
+        password: formikRef.current?.values.password,
+        loginType: "email",
+        plateform: Platform.OS
+      })
       console.log(response.data, 'Registration response');
       if (response.data) {
         try {
@@ -58,9 +59,41 @@ const LoginScreen = (props: Props) => {
     } catch (error: any) {
       console.error('Registration error:', error.response.data);
       if (error.response.data)
-        helpers.setErrors(error.response.data)
+        formikRef.current?.setErrors(error.response.data)
     }
   };
+  async function handleSocialLogin() {
+    const { idToken, accessToken, user } = await handleGoogleSignIn();
+    console.log(idToken, accessToken, user, "google response")
+    if (user.user.id) {
+      try {
+        const response = await CallLoginApi({
+          email: user.user.email,
+          password: "",
+          loginType: "google",
+          plateform: Platform.OS,
+          
+        })
+        console.log(response.data, 'Registration response');
+        if (response.data) {
+          try {
+            await Keychain.setGenericPassword("token", response.data.token);
+
+          } catch (error) {
+            console.log(error, "error in setting token")
+          }
+          props.navigation.reset({
+            index: 0,
+            routes: [{ name: 'BOTTOMTAB' }]
+          })
+        }
+      } catch (error: any) {
+        console.error('Registration error:', error.response.data);
+        if (error.response.data)
+          formikRef.current?.setErrors(error.response.data)
+      }
+    }
+  }
 
   const onForgetPress = () => {
     props.navigation.navigate("ForgetPassword")
@@ -69,10 +102,12 @@ const LoginScreen = (props: Props) => {
   return (
     <View style={styles.container}>
       <ScrollView keyboardShouldPersistTaps="always" keyboardDismissMode='on-drag' automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 120 }}>
-        <Image source={Icons.appLogo} style={{ width: 100, height: 100, resizeMode: 'contain', alignSelf: 'center', marginVertical: 10 }} />
-        <Text style={styles.title}>Welcome Back</Text>
+        <Image source={Icons.appLogo} style={{ width: 100, height: 100, resizeMode: 'contain', alignSelf: 'center', marginTop: 10 }} />
+        <Text style={{ fontFamily: "Poppins", fontSize: 20, color: "#999", alignSelf: 'center', textAlign: 'center' }}>Medi<Text style={{ color: "#111928" }}>verse</Text></Text>
+        <Text style={styles.title}>Hi, Welcome Back</Text>
         <Text style={styles.subtitle}>Hope you are doing fine</Text>
         <Formik
+          innerRef={formikRef}
           initialValues={initialVal}
           validationSchema={validationSchema}
           onSubmit={handleLogin}>
@@ -81,7 +116,8 @@ const LoginScreen = (props: Props) => {
             handleChange,
             errors,
             touched,
-            handleSubmit
+            handleSubmit,
+            isSubmitting
           }) => {
             return (
               <>
@@ -121,9 +157,7 @@ const LoginScreen = (props: Props) => {
                 />
 
                 {/* Login Button */}
-                <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
-                  <Text style={styles.buttonText}>Login</Text>
-                </TouchableOpacity>
+                <PromiseButton onPress={handleSubmit} text="Login" loading={isSubmitting} />
               </>
             )
           }}
@@ -132,9 +166,13 @@ const LoginScreen = (props: Props) => {
         <View style={styles.orWrapper}>
           <Text style={styles.orText}>Or</Text>
         </View>
+        <TouchableOpacity onPress={handleSocialLogin} style={styles.socialButton}>
+          <Image source={Icons.googleIcon} style={styles.iconStyle} />
+          <Text>Continue with Google</Text>
+        </TouchableOpacity>
         {/* Signup Link */}
         <TouchableOpacity onPress={() => props.navigation.navigate("SIGNUP")}>
-          <Text style={styles.link}>Don't have an account? Sign Up</Text>
+          <Text style={styles.link}>Don't have an account? <Text style={{ color: "#1C64F2" }}>Sign Up</Text></Text>
         </TouchableOpacity>
 
         {/* Forgot Password Link */}
@@ -202,7 +240,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#1C2A3A',
     paddingVertical: 15,
-    borderRadius: 10,
+    borderRadius: 30,
     alignItems: 'center',
     marginBottom: 15,
   },
@@ -212,15 +250,27 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   link: {
-    color: '#4CAF50',
+    color: '#6B7280',
     textAlign: 'center',
     fontSize: 14,
   },
   forgotPassword: {
-    color: '#4CAF50',
+    color: '#1C64F2',
     textAlign: 'center',
     fontSize: 14,
+    marginTop: 10
   },
+  socialButton: {
+    width: "100%",
+    height: 50,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    marginVertical: 10
+  }
 });
 
 export default LoginScreen;

@@ -5,7 +5,8 @@ import * as Keychain from 'react-native-keychain';
 
 export const BASE_URL =
   // Config.BASE_URL;
-  "http://192.168.174.207:5001"
+  // "http://evaidhya.site:5000/"
+  "http://192.168.55.176:5000/"
 
 const getAxiosClient = async () => {
   // Create a new Axios instance

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, Image, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, Image, ScrollView, Platform } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { navStrings, RootStackParamList } from '../../../navigation/navStrings';
 import axios from 'axios';
@@ -8,6 +8,7 @@ import getAxiosClient from '../../../HttpService/AxiosClient';
 import { Services } from '../../../HttpService';
 import CustomInput from '../../../components/CustomInput/CustomInput';
 import { Icons } from '../../../assets/icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { height, width } = Dimensions.get('window');
 
@@ -27,11 +28,14 @@ const SignupScreen = (props: Props) => {
 
     try {
       const client = await getAxiosClient();
+      const deviceToken = await AsyncStorage.getItem('fcmToken');
       const response = await client.post(Services.REGISTER, {
         email: email,
         password: password,
         role: Services.ROLE.PATIENT,
         name: username,
+        deviceToken: deviceToken ?? '',
+        plateform: Platform.OS
       });
       console.log(response, 'Registration response');
       Alert.alert('Success');

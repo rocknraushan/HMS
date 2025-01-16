@@ -6,7 +6,8 @@ import { setNetConnet } from './src/Redux/reducers/screensR/screensR';
 import Toast from 'react-native-toast-message';
 import { useDispatch } from 'react-redux';
 import defaultTheme, { light_theme, dark_theme, Theme } from './src/theme/colors';
-import { Linking } from 'react-native';
+import messaging from "@react-native-firebase/messaging";
+import fcmService from './src/notification/FcmService';
 
 
 export const ThemeContext = createContext<{
@@ -27,14 +28,47 @@ const App = () => {
     dispatch(setNetConnet(state.isConnected));
   };
 
+
   const debounceHandleNet = _.debounce(handleNetworkChange, 600, {
     leading: false,
     trailing: true,
   });
 
   useEffect(() => {
+    fcmService.requestUserPermission();
+  }, []);
+
+  useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(debounceHandleNet);
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribeOnMessage = messaging().onMessage(async remoteMessage => {
+      Toast.show({
+        type: 'info',
+        text1: remoteMessage.notification?.title,
+        text2: remoteMessage.notification?.body,
+        visibilityTime: 5000,
+      });
+    });
+
+    const unsubscribeOnNotificationOpenedApp = messaging().onNotificationOpenedApp(remoteMessage => {
+      console.log('Notification caused app to open from background state:', remoteMessage.notification);
+    });
+
+    messaging()
+      .getInitialNotification()
+      .then(remoteMessage => {
+        if (remoteMessage) {
+          console.log('Notification caused app to open from quit state:', remoteMessage.notification);
+        }
+      });
+
+    return () => {
+      unsubscribeOnMessage();
+      unsubscribeOnNotificationOpenedApp();
+    };
   }, []);
 
   const toggleTheme = () => {
