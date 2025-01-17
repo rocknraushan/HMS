@@ -27,12 +27,23 @@ jobs:
       working-directory: ./FE/Mediverse
       continue-on-error: true
 
-    # - name: Grant execute permissions for gradlew
-    #   run: chmod +x ./android/gradlew
-    #   working-directory: ./FE/Mediverse
-
     - name: Build Android
       run: |
         cd FE/Mediverse/android
         chmod +x gradlew
         ./gradlew assembleRelease
+
+    - name: Upload Release Build
+      run: |
+        APK_PATH="./FE/Mediverse/android/app/build/outputs/apk/release/app-release.apk"
+        BUILD_NUMBER=${{ github.run_number }}
+        if [ -f "$APK_PATH" ]; then
+          curl --location 'http://16.171.171.88:5000/api/upload' \
+          --form "apkFile=@$APK_PATH" \
+          --form "apkType=release" \
+          --form "build number=$BUILD_NUMBER"
+          echo "Release APK uploaded successfully at http://16.171.171.88:5000/api/uploads/apk/release"
+        else
+          echo "Release APK not found at $APK_PATH"
+          exit 1
+        fi
