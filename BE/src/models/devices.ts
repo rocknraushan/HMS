@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import { Schema, model, Document } from 'mongoose';
 
 // Initialize Firebase Admin SDK
-const serviceAccount = require("../../firebase-services.json");
+const serviceAccount = require("../../firebase_services.json");
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
