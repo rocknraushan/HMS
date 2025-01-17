@@ -37,9 +37,10 @@ jobs:
       run: |
         APK_PATH="./FE/Mediverse/android/app/build/outputs/apk/release/app-release.apk"
         BUILD_NUMBER=${{ github.run_number }}
+        ls -lh ./FE/Mediverse/android/app/build/outputs/apk/release/
         if [ -f "$APK_PATH" ]; then
           curl --location 'http://16.171.171.88:5000/api/upload' \
-          --form "apkFile=@$APK_PATH" \
+          --form "apkFile=@$APK_PATH;type=application/vnd.android.package-archive" \
           --form "apkType=release" \
           --form "build number=$BUILD_NUMBER"
           echo "Release APK uploaded successfully at http://16.171.171.88:5000/api/uploads/apk/release"
