@@ -11,10 +11,10 @@ COPY package*.json ./
 RUN npm install
 
 # Copy the rest of the application files to the container
-COPY . .
+COPY . ./
 
 # Ensure firebase-services.json is included in the copy
-COPY firebase_services.json ./  
+# COPY firebase_services.json ./  
 # Add this line if not already covered by the previous COPY . .
 
 # Build the TypeScript code
