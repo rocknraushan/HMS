@@ -14,7 +14,7 @@ RUN npm install
 COPY . ./
 
 # Ensure firebase-services.json is included in the copy
-# COPY firebase_services.json ./  
+COPY firebase_services.json ./  
 # Add this line if not already covered by the previous COPY . .
 
 # Build the TypeScript code
