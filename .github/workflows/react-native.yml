@@ -39,11 +39,11 @@ jobs:
         BUILD_NUMBER=${{ github.run_number }}
         ls -lh ./FE/Mediverse/android/app/build/outputs/apk/release/
         if [ -f "$APK_PATH" ]; then
-          curl --location 'http://16.171.171.88:5000/api/upload' \
+          curl --location 'http://13.61.152.61:5000/api/upload' \
           --form "apkFile=@$APK_PATH;type=application/vnd.android.package-archive" \
           --form "apkType=release" \
           --form "build number=$BUILD_NUMBER"
-          echo "Release APK uploaded successfully at http://16.171.171.88:5000/api/uploads/apk/release"
+          echo "Release APK uploaded successfully at http://13.61.152.61:5000/api/uploads/apk/release"
         else
           echo "Release APK not found at $APK_PATH"
           exit 1
