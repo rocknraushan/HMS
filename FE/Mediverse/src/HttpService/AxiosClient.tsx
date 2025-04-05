@@ -1,49 +1,34 @@
 import axios from 'axios';
-import Storage from '../storage/Storage';
-import Config from 'react-native-config';
 import * as Keychain from 'react-native-keychain';
 
-export const BASE_URL =
-  // Config.BASE_URL;
-  // "http://evaidhya.site:5000/"
-  "http://16.171.171.88:5000/"
+export const BASE_URL = "http://192.168.39.141:5000/";
 
 const getAxiosClient = async () => {
-  // Create a new Axios instance
   const client = axios.create({
     baseURL: BASE_URL,
     timeout: 1000 * 60,
-    headers: {
-      // Uncomment if needed, but be cautious with CORS issues in development
-      // 'Access-Control-Allow-Origin': '*',
-    },
   });
 
-  // Add a request interceptor
   client.interceptors.request.use(async (request) => {
     try {
       const user = await Keychain.getGenericPassword();
-      console.log(user, "auth token")
-      if (user) {
+      if (user && user.password) {
         request.headers.Authorization = `Bearer ${user.password}`;
       }
     } catch (error) {
-      console.log(error, "error in key")
+      console.log('Error fetching auth token from Keychain:', error);
     }
-
-
 
     console.log(
       'API REQUEST====>',
-      request.url,
-      request.params,
-      request.headers.Authorization
+      request?.url,
+      request?.params ?? {},
+      request?.headers ?? {},
     );
 
     return request;
   });
 
-  // Add a response interceptor
   client.interceptors.response.use(
     (response) => {
       console.log(
@@ -52,17 +37,16 @@ const getAxiosClient = async () => {
         response?.config?.headers
       );
 
-      // Handle success responses
       if (
-        response?.status < 300 || // HTTP success statuses
-        response?.data?.code < 300 || // Custom success codes
-        response?.data?.success // Custom success flag
+        response?.status < 300 ||
+        response?.data?.code < 300 ||
+        response?.data?.success
       ) {
-        return response; // Return the response data
+        return response;
       }
 
       console.error('API ERROR RESPONSE====>', response?.status);
-      throw response?.data; // Throw an error for non-successful responses
+      throw response?.data;
     },
     (error) => {
       console.error(
@@ -72,19 +56,18 @@ const getAxiosClient = async () => {
         error?.response
       );
 
-      // Handle specific error cases (e.g., unauthorized)
       if (
-        error?.response?.status === 401 || // HTTP Unauthorized
-        error?.response?.data?.error?.err_str === 'E_REQUEST_UNAUTHORIZED' // Custom unauthorized error
+        error?.response?.status === 401 ||
+        error?.response?.data?.error?.err_str === 'E_REQUEST_UNAUTHORIZED'
       ) {
-        // Handle token expiration or unauthorized access here
+        // Optionally, trigger logout or refresh token flow
       }
 
-      throw error; // Propagate the error
+      throw error;
     }
   );
 
-  return client; // Return the configured Axios client
+  return client;
 };
 
 export default getAxiosClient;

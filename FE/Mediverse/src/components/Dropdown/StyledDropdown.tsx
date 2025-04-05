@@ -1,9 +1,9 @@
-import React, {useCallback, useMemo} from 'react';
+import React, {memo, useCallback, useContext, useMemo} from 'react';
 import {Dropdown} from 'react-native-element-dropdown';
-import {useUser} from '../../context/user';
 import {rspF, rspH, rspW} from '../../theme/responsive';
 import {StyleProp, StyleSheet, Text, View, ViewStyle} from 'react-native';
 import {Theme} from '../../theme/colors';
+import { ThemeContext } from '../../../App';
 
 export interface DropdownType {
   label: string;
@@ -11,28 +11,18 @@ export interface DropdownType {
   image?: string;
 }
 
-const data: DropdownType[] = [
-  {label: 'Item 1', value: '1'},
-  {label: 'Item 2', value: '2'},
-  {label: 'Item 3', value: '3'},
-  {label: 'Item 4', value: '4'},
-  {label: 'Item 5', value: '5'},
-  {label: 'Item 6', value: '6'},
-  {label: 'Item 7', value: '7'},
-  {label: 'Item 8', value: '8'},
-];
 
 interface DropdownProps {
-  error?: boolean;
+  error?: any;
   data: DropdownType[];
   value?: string;
   onChangeText?: (val: string) => void;
   dropdownStyle?: StyleProp<ViewStyle>;
   placeholder?: string;
   disabled?: boolean;
-  errorText?: string;
   renderItem?: (item: DropdownType[]) => void;
   search?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 const StyledDropdown = ({
@@ -43,11 +33,11 @@ const StyledDropdown = ({
   onChangeText,
   placeholder,
   disabled,
-  errorText,
-  search
+  search,
+  style,
 }: DropdownProps) => {
-  const {theme} = useUser();
-  const styles = style(theme);
+  const {theme} = useContext(ThemeContext);
+  const styles = styleSheet(theme);
 
   const selectedValue = useMemo(() => {
     return data.find(item => item.value === value);
@@ -58,7 +48,7 @@ const StyledDropdown = ({
   }, []);
 
   return (
-    <>
+    <View style={style}>
       <Dropdown
         data={data}
         placeholder={placeholder}
@@ -71,7 +61,7 @@ const StyledDropdown = ({
         style={[styles.dropdown, dropdownStyle, error && styles.error]}
         selectedTextStyle={styles.selected}
         itemTextStyle={{
-          color: theme.grey,
+          color: "#9CA3AF",
           padding: 0,
           margin: 0,
           height: 30,
@@ -87,7 +77,7 @@ const StyledDropdown = ({
             <View>
               <Text
                 style={{
-                  color: theme.black,
+                  color: theme.Black,
                 }}>
                 {item.label}
               </Text>
@@ -102,33 +92,35 @@ const StyledDropdown = ({
         searchField='label'
       />
 
-      {errorText && <Text style={styles.errorText}>{errorText}</Text>}
-    </>
+      {error && <Text style={styles.errorText}>{error}</Text>}
+    </View>
   );
 };
-const style = (theme: Theme) =>
+const styleSheet = (theme: Theme) =>
   StyleSheet.create({
     dropdown: {
-      borderWidth: 1,
-      borderColor: theme.grey,
-      borderRadius: 4,
-
-      height: rspH(40),
       paddingHorizontal: rspW(12),
+      height: 50,
+    borderColor: '#9CA3AF',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingLeft: 15,
+    backgroundColor: '#fff',
+    width: '100%',
     },
     error: {
-      borderColor: theme.grey,
+      borderColor: "#9CA3AF",
     },
     selected: {
       fontSize: rspF(16),
       lineHeight: rspF(16),
-      color: theme.black,
+      color: "#9CA3AF",
       fontWeight: '500',
     },
 
     errorText: {
-      color: theme.red,
+      color: theme.darkRed,
       fontSize: rspF(12),
     },
   });
-export default StyledDropdown;
+export default memo(StyledDropdown);

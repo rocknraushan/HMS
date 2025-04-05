@@ -14,6 +14,8 @@ interface CustomInputProps {
   extra?: TextInputProps;
   isPassword?: boolean;
   leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
+  onActionPress?: () => void;
 }
 
 const CustomInput: React.FC<CustomInputProps> = ({
@@ -25,7 +27,9 @@ const CustomInput: React.FC<CustomInputProps> = ({
   containerStyle,
   extra,
   isPassword,
-  leftIcon
+  leftIcon,
+  rightIcon,
+  onActionPress
 }) => {
   const [hide, setHide] = useState(true);
   return (
@@ -45,8 +49,11 @@ const CustomInput: React.FC<CustomInputProps> = ({
           secureTextEntry={isPassword && hide}
         />
         {isPassword &&
-          <Pressable style={{ alignItems: 'center', justifyContent: "center" }} onPress={() => setHide(!hide)}>
+          <Pressable hitSlop={10} style={{ alignItems: 'center', justifyContent: "center" }} onPress={() => setHide(!hide)}>
             <Image source={!hide ? Icons.eyeOpenIcon : Icons.eyeCloseIcon} style={{ tintColor: "#9CA3AF", width: 20, height: 20, resizeMode: "cover", marginEnd: 8 }} />
+          </Pressable>}
+          {rightIcon &&  <Pressable hitSlop={10} style={{ alignItems: 'center', justifyContent: "center" }} onPress={onActionPress}>
+            {rightIcon}
           </Pressable>}
       </View>
       {error && <Animated.Text entering={FadeIn} exiting={FadeOut} style={styles.errorText}>{error}</Animated.Text>}
@@ -64,7 +71,7 @@ const styles = StyleSheet.create({
     borderColor: '#9CA3AF',
     borderWidth: 1,
     borderRadius: 10,
-    paddingLeft: 15,
+    paddingLeft: 10,
     fontSize: 16,
     backgroundColor: '#fff',
     width: '100%',

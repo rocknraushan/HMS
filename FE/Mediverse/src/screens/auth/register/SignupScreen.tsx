@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, Image, ScrollView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, Image, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { navStrings, RootStackParamList } from '../../../navigation/navStrings';
 import axios from 'axios';
@@ -48,8 +48,16 @@ const SignupScreen = (props: Props) => {
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView keyboardShouldPersistTaps="always" keyboardDismissMode='on-drag' automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 120 }}>
+    // <View style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+      >
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      keyboardShouldPersistTaps="always" keyboardDismissMode='on-drag' automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 120 }}>
         <Image source={Icons.appLogo} style={{ width: 100, height: 100, resizeMode: 'contain', alignSelf: 'center', marginVertical: 10 }} />
 
         <Text style={styles.title}>Create an Account</Text>
@@ -105,7 +113,8 @@ const SignupScreen = (props: Props) => {
           <Text style={styles.link}>Already have an account? Login</Text>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+      </KeyboardAvoidingView>
+    // </View>
   );
 };
 

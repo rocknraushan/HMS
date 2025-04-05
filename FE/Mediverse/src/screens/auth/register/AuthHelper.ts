@@ -7,7 +7,7 @@ GoogleSignin.configure();
 interface GoogleSignInResult {
     idToken: string | null;
     accessToken: string | null;
-    user: User;
+    user: any;
 }
 
 export async function handleGoogleSignIn(): Promise<GoogleSignInResult> {
@@ -40,6 +40,7 @@ export interface LoginData {
     password: string | undefined;
     loginType: "google" | "email";
     plateform: string;
+    socialData?:any;
 }
 export async function CallLoginApi(data: LoginData): Promise<any> {
     return new Promise<void>(async (resolve, reject) => {
@@ -51,7 +52,8 @@ export async function CallLoginApi(data: LoginData): Promise<any> {
                 password: data.password,
                 loginType: data.loginType,
                 plateform: data.plateform,
-                deviceToken: deviceToken
+                deviceToken: deviceToken,
+                socialData: data.socialData
             });
             resolve(response.data);
         } catch (error) {

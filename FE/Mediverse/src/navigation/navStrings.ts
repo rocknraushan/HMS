@@ -22,6 +22,7 @@ export type RootStackParamList = {
   FILTER_BRAND: { hideSeller?: boolean; onSelect?: (items: string[]) => void };
   SIGNUP: undefined;
   BOTTOMTAB: undefined;
+  UserProfileForm: undefined;
 
   //Create Post
   CHOOSE_TEMPLATE: undefined;

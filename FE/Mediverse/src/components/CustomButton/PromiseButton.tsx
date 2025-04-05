@@ -1,15 +1,16 @@
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native'
 import React, { memo } from 'react'
 
 type Props = {
     onPress: () => void;
     text: string;
     loading?: boolean;
+    style?:StyleProp<ViewStyle>;
 }
 
-const PromiseButton = ({ onPress, text, loading }: Props) => {
+const PromiseButton = ({ onPress, text, loading,style }: Props) => {
     return (
-        <TouchableOpacity disabled={loading} style={styles.button} onPress={onPress}>
+        <TouchableOpacity disabled={loading} style={[styles.button,style]} onPress={onPress}>
             {!loading ?
                 <Text style={styles.buttonText}>{text}</Text>
                 :

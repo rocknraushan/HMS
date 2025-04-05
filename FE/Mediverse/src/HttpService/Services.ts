@@ -1,6 +1,7 @@
 const Services = {
   REGISTER: "api/auth/register",
   LOGIN: "api/auth/login",
+  PROFILE_UPDATE: "api/auth/profile/update",
   ROLE: {
     PATIENT: "patient",
     DOCTOR: "doctor",

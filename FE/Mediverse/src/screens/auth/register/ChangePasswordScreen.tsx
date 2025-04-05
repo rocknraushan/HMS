@@ -5,11 +5,11 @@ import { RootStackParamList } from '../../../navigation/navStrings'
 
 type Props = {
     navigation: NavigationProp<RootStackParamList, 'ChangePasswordScreen'>;
-    route: NavigationRoute<RootStackParamList, 'ChangePasswordScreen'>;
+    // route: NavigationRoute<RootStackParamList, 'ChangePasswordScreen'>;
 }
 
 const ChangePasswordScreen = (props: Props) => {
-    console.log(props.route.params)
+    // console.log(props.route.params)
     return (
         <View>
             <Text>ChangePasswordScreen</Text>
