@@ -1,7 +1,9 @@
 import express, { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/User";
-import { createUser, forgetPassword, userLogin } from "../controllers/userController";
+import { createUser, forgetPassword, getProfile, updateProfile, userLogin } from "../controllers/userController";
+import { authMiddleware } from "../middleware/authMiddleware";
+import { uploadSingleProfilePic } from "../middleware/uploadMiddleware";
 
 const router = express.Router();
 
@@ -11,5 +13,7 @@ router.post("/register", createUser);
 // Login
 router.post("/login", userLogin);
 router.post("/forget-password", forgetPassword);
+router.put("/profile/update",authMiddleware,uploadSingleProfilePic,updateProfile);
+router.get("/profile", authMiddleware, getProfile);
 
 export default router;

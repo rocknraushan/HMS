@@ -12,17 +12,27 @@ export interface IUser extends Document {
   resetPasswordToken: string;
   resetPasswordExpiry: number;
   profilePic: string;
-  socialData: Object;
+  socialData: any;
+  dob: string;
+  bloodGroup: string;
+  gender: string;
+  phone: string;
+  firstLogin: boolean;
 }
 
 const userSchema: Schema<IUser> = new Schema({
-  firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
-  name: { type: String, required: true },
+  firstName: { type: String, required: false },
+  lastName: { type: String, required: false },
+  name: { type: String, required: false },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  profilePic: { type: String, required: false },
+  profilePic: { type: String, required: false, data : Buffer },
   socialData: { type: Object, required: false },
+  dob: { type: String, required: false },
+  bloodGroup: { type: String, required: false },
+  gender: { type: String, required: false },
+  phone: { type: String, required: false },
+  firstLogin: { type: Boolean, default: true },
   role: {
     type: String,
     enum: ["doctor", "nurse", "admin", "patient"],
