@@ -5,8 +5,8 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import DeviceToken from "../models/devices";
 import * as admin from "firebase-admin";
-import path from "path";
-import fs from "fs";
+import streamifier from 'streamifier';
+import cloudinary from "../config/cludinary";
 
 const FRONTEND_APP_URL = process.env.FRONTEND_APP_URL || "mediverse://";
 
@@ -220,9 +220,11 @@ export async function forgetPassword(
   }
 }
 
+
+
 export async function updateProfile(req: Request, res: Response): Promise<any> {
   const { name, email, phone, dob, gender, bloodGroup } = req.body;
-  const profilePic = req.file; // multer adds this if single('profilePic') is used
+  const profilePic = req.file;
 
   //@ts-ignore
   const user = req.user;
@@ -240,21 +242,29 @@ export async function updateProfile(req: Request, res: Response): Promise<any> {
       bloodGroup: bloodGroup || user.bloodGroup,
       firstLogin: false,
     };
-    // Handle profile picture upload
+
+    // If a profile picture is provided, upload to Cloudinary
     if (profilePic) {
-      const fileName =
-        crypto.randomBytes(16).toString('hex') +
-        path.extname(profilePic.originalname);
+      const streamUpload = (buffer: Buffer) => {
+        return new Promise<{ secure_url: string }>((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: 'profile_pics' },
+            (error, result) => {
+              if (result) {
+                resolve(result);
+              } else {
+                reject(error);
+              }
+            }
+          );
+          streamifier.createReadStream(buffer).pipe(stream);
+        });
+      };
 
-      const uploadDir = path.join(__dirname, '../uploads');
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-
-      const uploadPath = path.join(uploadDir, fileName);
-      fs.writeFileSync(uploadPath, profilePic.buffer);
-      updatedData["profilePic"] = uploadPath;
+      const result = await streamUpload(profilePic.buffer);
+      updatedData.profilePic = result.secure_url;
     }
+
     const updatedUser = await User.findByIdAndUpdate(user._id, updatedData, {
       new: true,
       runValidators: true,
@@ -264,12 +274,13 @@ export async function updateProfile(req: Request, res: Response): Promise<any> {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.status(200).json({ message: 'Profile updated successfully'});
+    res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
   } catch (error) {
     console.error('Error updating profile:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 }
+
 
 export async function getProfile(req: Request, res: Response): Promise<any> {
   try {

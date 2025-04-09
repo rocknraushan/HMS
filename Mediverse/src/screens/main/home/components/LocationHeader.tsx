@@ -1,25 +1,27 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { BellIcon, DownArrow, LocationIcon } from '../../../../assets/icons/svg/SvgIcons';
+const LocationNotificationHeader = React.memo(() => {
+  return (
+    <View style={styles.container}>
+      <View>
+        <Text style={styles.label}>Location</Text>
+        <TouchableOpacity style={styles.locationRow}>
+          <LocationIcon />
+          <Text style={styles.locationText}>Seattle, USA</Text>
+          <DownArrow width={12} height={12} />
+        </TouchableOpacity>
+      </View>
 
-const LocationHeader = React.memo(() => (
-  <View style={styles.container}>
-    <View>
-      <Text style={styles.label}>Location</Text>
-      <TouchableOpacity style={styles.locationRow}>
-        <Text style={styles.location}>Seattle, USA</Text>
+      <TouchableOpacity style={styles.bellContainer}>
+        <BellIcon />
+        <View style={styles.redDot} />
       </TouchableOpacity>
     </View>
-    <TouchableOpacity>
-      <Image
-        source={{ uri: 'https://i.pravatar.cc/100' }}
-        style={styles.avatar}
-      />
-      <View style={styles.badge} />
-    </TouchableOpacity>
-  </View>
-));
+  );
+});
 
-export default LocationHeader;
+export default LocationNotificationHeader;
 
 const styles = StyleSheet.create({
   container: {
@@ -31,28 +33,35 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     color: '#6B7280',
+    marginBottom: 2,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
   },
-  location: {
+  locationText: {
     fontSize: 15,
     fontWeight: '600',
     color: '#111827',
+    marginHorizontal: 4,
   },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  bellContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
   },
-  badge: {
-    width: 10,
-    height: 10,
-    backgroundColor: 'red',
-    borderRadius: 5,
+  redDot: {
     position: 'absolute',
-    top: 2,
-    right: 2,
+    top: 6,
+    right: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#EF4444',
   },
 });

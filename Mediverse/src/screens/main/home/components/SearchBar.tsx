@@ -4,7 +4,7 @@ import { SearchIcon } from '../../../../assets/icons/svg/SvgIcons';
 
 const SearchBar = React.memo(() => (
   <View style={styles.container}>
-    <SearchIcon width={20} height={20} />
+    <SearchIcon  />
     <TextInput
       placeholder="Search doctor..."
       placeholderTextColor="#9CA3AF"

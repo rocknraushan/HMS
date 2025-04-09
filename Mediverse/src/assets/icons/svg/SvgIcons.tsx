@@ -222,3 +222,37 @@ export const EditProfileIcon = (props:any) => (
       />
     </Svg>
   );
+  
+  export const LocationIcon =(props:any={}) => (
+    <Svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={18}
+      height={21}
+      fill="none"
+      {...props}
+    >
+      <Path
+        fill="#1C2A3A"
+        d="M17.5 6.95C16.45 2.33 12.42.25 8.88.25h-.01C5.34.25 1.3 2.32.25 6.94-.92 12.1 2.24 16.47 5.1 19.22a5.436 5.436 0 0 0 3.78 1.53c1.36 0 2.72-.51 3.77-1.53 2.86-2.75 6.02-7.11 4.85-12.27Zm-8.62 5.01a3.15 3.15 0 1 1 0-6.3 3.15 3.15 0 0 1 0 6.3Z"
+      />
+    </Svg>
+  );
+
+  export const DownArrow =(props:any={}) => (
+    <Svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={15}
+      height={15}
+      fill="none"
+      {...props}
+    >
+      <Path
+        stroke="#292D32"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeMiterlimit={10}
+        strokeWidth={1.5}
+        d="M12.37 5.72 8.567 9.525c-.45.45-1.185.45-1.634 0L3.13 5.721"
+      />
+    </Svg>
+  );

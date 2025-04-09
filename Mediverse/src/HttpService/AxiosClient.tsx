@@ -61,6 +61,11 @@ const getAxiosClient = async () => {
         error?.response?.data?.error?.err_str === 'E_REQUEST_UNAUTHORIZED'
       ) {
         // Optionally, trigger logout or refresh token flow
+        Keychain.resetGenericPassword()
+          .then(() => {
+            console.log('Keychain reset successfully');
+          });
+
       }
 
       throw error;

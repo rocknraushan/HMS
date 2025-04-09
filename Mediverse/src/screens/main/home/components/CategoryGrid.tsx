@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { beaker, brain, heart, liver, lungs, scope, tooth } from '../../../../assets';
+import { beaker, brain, heart, injection, liver, lungs, scope, tooth } from '../../../../assets';
 import FastImage from 'react-native-fast-image';
 
 interface CategoryItemProps {
@@ -16,14 +16,15 @@ const categories: CategoryItemProps[] = [
     { label: 'Psychiatry', icon: scope },
     { label: 'Radiology', icon: beaker },
     { label: 'Surgery', icon: lungs },
+    {label:"Vaccination",icon:injection},
   // ... more categories
 ];
 
 const CategoryGrid = React.memo(() => {
-  const renderItem = ({ item }: { item: CategoryItemProps }) => {
+  const renderItem = (item: CategoryItemProps,index:number) => {
     return (
-      <TouchableOpacity style={[styles.item]}>
-        <FastImage source={item.icon} style={{width:35,height:35}}  />
+      <TouchableOpacity key={index} style={[styles.item]}>
+        <FastImage source={item.icon} style={{width:75,height:75}}  />
         <Text style={styles.label}>{item.label}</Text>
       </TouchableOpacity>
     );
@@ -35,13 +36,13 @@ const CategoryGrid = React.memo(() => {
         <Text style={styles.title}>Categories</Text>
         <Text style={styles.seeAll}>See All</Text>
       </View>
-      <FlatList
-        data={categories}
-        renderItem={renderItem}
-        numColumns={4}
-        scrollEnabled={false}
-        keyExtractor={(item, index) => index.toString()}
-      />
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around' }}>
+      {
+        categories.length > 0 && (
+          categories.map(renderItem)
+        ) 
+      }
+    </View>
     </View>
   );
 });
@@ -58,11 +59,11 @@ const styles = StyleSheet.create({
   title: { fontSize: 16, fontWeight: '600' },
   seeAll: { fontSize: 13, color: '#3B82F6' },
   item: {
-    flex: 1,
+    // flex: 1,
     alignItems: 'center',
     marginBottom: 16,
-    padding: 10,
     borderRadius: 12,
+    marginHorizontal: 8,
   },
   label: {
     fontSize: 12,

@@ -15,11 +15,12 @@ const centers = [
 const HomeScreen = () => {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <SafeAreaView>
+      <SafeAreaView style={{ paddingHorizontal: 16 }}>
       <LocationHeader />
-      </SafeAreaView>
       <SearchBar />
+      </SafeAreaView>
       <PromoBannerCarousel />
+      <View style={{paddingHorizontal:16}} >
       <CategoryGrid />
       <View style={styles.row}>
         <Text style={styles.title}>Nearby Medical Centers</Text>
@@ -33,8 +34,7 @@ const HomeScreen = () => {
         renderItem={({ item }) => <MedicalCenterCard {...item} />}
         contentContainerStyle={{ paddingRight: 16 }}
       /> 
-      {/* 
-      */}
+      </View>
     </ScrollView>
   );
 };
@@ -43,7 +43,6 @@ export default HomeScreen;
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
     paddingTop: 16,
     backgroundColor: '#fff',
   },
