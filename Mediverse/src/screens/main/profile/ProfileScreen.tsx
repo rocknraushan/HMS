@@ -68,8 +68,8 @@ const ProfileScreen = ({ navigation }: Props) => {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.name}>Dheeraj Mishra</Text>
-        <Text style={styles.phone}>+123 856479683</Text>
+        <Text style={styles.name}>{profileData?.name}</Text>
+        <Text style={styles.phone}>{profileData?.phone}</Text>
 
         <View style={styles.listContainer}>
           <IconWithTextRow icon={<EditProfileIcon />} label="Edit Profile" onPress={() => handleNavigation("UserProfileForm")} />

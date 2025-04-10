@@ -2,12 +2,13 @@ import { Image as ImageType } from 'react-native-image-crop-picker';
 
 export type RootStackParamList = {
   SPLASH: undefined;
+  ChooseRoleScreen: undefined;
   WELCOME: undefined;
   SELECT_LANGUAGE: { hideBack?: boolean };
   ChangePasswordScreen: { token: string };
   ForgetPassword: undefined;
   HOME: undefined;
-  LOGIN: undefined;
+  LOGIN:undefined;
   REGISTER: undefined;
   VERIFY_OTP: undefined;
   GST_REGISTRATION: undefined;
@@ -23,7 +24,7 @@ export type RootStackParamList = {
   SIGNUP: undefined;
   BOTTOMTAB: undefined;
   UserProfileForm: undefined;
-
+  DoctorTab: undefined;
   //Create Post
   CHOOSE_TEMPLATE: undefined;
   ADD_POST_DETAILS: {

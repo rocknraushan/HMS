@@ -9,6 +9,9 @@ import { Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import fontFM from '../../../theme/fontFM'
 import { rspH } from '../../../theme/responsive'
+import getAxiosClient from '../../../HttpService/AxiosClient'
+import { Services } from '../../../HttpService'
+import SuccessModal from '../../../components/loaders/SuccessModal'
 
 const initialVal = {
     email: '',
@@ -21,42 +24,29 @@ type Props = {
 }
 
 const ForgetPassword = ({ navigation }: Props) => {
-    const [email, setEmail] = useState('');
+    const [successMsg, setSuccessMsg] = useState(false)
 
     const handleSendCode = async (values: typeof initialVal, helpers: FormikHelpers<{
         email: string;
     }>) => {
-        console.log('Email:', email);
-
-        // try {
-        //   const client = await getAxiosClient();
-        //   const response = await client.post(Services.LOGIN, {
-        //     email: values.email,
-        //     password: values.password
-        //   });
-        //   console.log(response.data, 'Registration response');
-        //   if (response.data) {
-        //     try {
-        //       await Keychain.setGenericPassword("token", response.data.token);
-
-        //     } catch (error) {
-        //       console.log(error, "error in setting token")
-        //     }
-        //     props.navigation.reset({
-        //       index: 0,
-        //       routes: [{ name: 'BOTTOMTAB' }]
-        //     })
-        //   }
-        // } catch (error: any) {
-        //   console.error('Registration error:', error.response.data);
-        //   if (error.response.data)
-        //     helpers.setErrors(error.response.data)
-        // }
+        try {
+            const client = await getAxiosClient();
+            const response = await client.post(Services.FORGOT_PASSWORD, {
+                email: values.email
+            });
+            console.log(response.data, 'FORGET response');
+            setSuccessMsg(true)
+        } catch (error: any) {
+            console.error('Registration error:', error.response.data);
+            if (error.response.data.errors)
+                helpers.setErrors(error.response.data.errors)
+        }
     };
 
 
     return (
         <View style={styles.container}>
+            <SuccessModal visible={successMsg} duration={10000} onClose={()=>setSuccessMsg(false)} title='Success' subTitle='Kindly check your mail, we have sent a reset link.'/>
             <ScrollView keyboardShouldPersistTaps="always" keyboardDismissMode='on-drag' automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 120 }}>
                 <Image source={Icons.appLogo} style={{ width: 100, height: 100, resizeMode: 'contain', alignSelf: 'center', marginTop: 10 }} />
                 <Text style={{ fontFamily: "Poppins", fontSize: 20, color: "#999", alignSelf: 'center', textAlign: 'center' }}>Medi<Text style={{ color: "#111928" }}>verse</Text></Text>

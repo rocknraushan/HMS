@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,22 +10,23 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
-import {CommonActions, NavigationProp} from '@react-navigation/native';
-import {RootStackParamList} from '../../../navigation/navStrings';
+import { CommonActions, NavigationProp, NavigationRoute } from '@react-navigation/native';
+import { RootStackParamList } from '../../../navigation/navStrings';
 import getAxiosClient from '../../../HttpService/AxiosClient';
-import {Services} from '../../../HttpService';
+import { Services } from '../../../HttpService';
 import Storage from '../../../storage/Storage';
 import CustomInput from '../../../components/CustomInput/CustomInput';
-import {Icons} from '../../../assets/icons';
-import {Formik, FormikHelpers, FormikProps} from 'formik';
+import { Icons } from '../../../assets/icons';
+import { Formik, FormikHelpers, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import * as Keychain from 'react-native-keychain';
 import GenericLoader from '../../../components/loaders/GenericLoader';
 import PromiseButton from '../../../components/CustomButton/PromiseButton';
-import {CallLoginApi, handleGoogleSignIn} from './AuthHelper';
+import { CallLoginApi, handleGoogleSignIn } from './AuthHelper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { values } from 'lodash';
 
-const {height, width} = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 const initialVal = {
   email: '',
   password: '',
@@ -41,32 +42,25 @@ type Props = {
 };
 
 const LoginScreen = (props: Props) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const formikRef = React.useRef<FormikProps<typeof initialVal>>(null);
 
   const handleLogin = async () => {
-    console.log('Email:', email);
-    console.log('Password:', password);
     try {
       const response = await CallLoginApi({
         email: formikRef.current?.values.email,
         password: formikRef.current?.values.password,
         loginType: 'email',
-        plateform: Platform.OS,
+        plateform: Platform.OS
       });
-      console.log(response, 'Registration response');
       if (response) {
-        try {
-          await Keychain.setGenericPassword('token', response.token);
-        } catch (error) {
-          console.log(error, 'error in setting token');
-        }
-        if(response.firstLogin) {
+        if (response.firstLogin) {
           props.navigation.navigate('UserProfileForm');
         } else
-        //@ts-ignore
-        props.navigation.replace('BOTTOMTAB')
+          props.navigation.reset({
+            index:0,
+           routes:[{name:"BOTTOMTAB"}]
+          }
+          )
 
       }
     } catch (error: any) {
@@ -76,7 +70,7 @@ const LoginScreen = (props: Props) => {
     }
   };
   async function handleSocialLogin() {
-    const {idToken, accessToken, user} = await handleGoogleSignIn();
+    const { idToken, accessToken, user } = await handleGoogleSignIn();
     console.log(idToken, accessToken, user, 'google response');
     if (user.id) {
       try {
@@ -89,15 +83,15 @@ const LoginScreen = (props: Props) => {
         });
         console.log(response, 'Registration response');
         if (response.token) {
-            await Keychain.setGenericPassword('token', response.token);
+          await Keychain.setGenericPassword(user.email, JSON.stringify(response));
           if (response.firstLogin) {
             props.navigation.navigate('UserProfileForm');
           } else
             props.navigation.reset({
               index: 0,
-              routes: [{name: 'BOTTOMTAB'}],
+              routes: [{ name: 'BOTTOMTAB' }],
             });
-            // props.navigation.navigate('BOTTOMTAB');
+          // props.navigation.navigate('BOTTOMTAB');
 
         }
       } catch (error: any) {
@@ -118,7 +112,7 @@ const LoginScreen = (props: Props) => {
         keyboardShouldPersistTaps="always"
         keyboardDismissMode="on-drag"
         automaticallyAdjustKeyboardInsets
-        contentContainerStyle={{paddingTop: 120}}>
+        contentContainerStyle={{ paddingTop: 120 }}>
         <Image
           source={Icons.appLogo}
           style={{
@@ -137,7 +131,7 @@ const LoginScreen = (props: Props) => {
             alignSelf: 'center',
             textAlign: 'center',
           }}>
-          Medi<Text style={{color: '#111928'}}>verse</Text>
+          Medi<Text style={{ color: '#111928' }}>verse</Text>
         </Text>
         <Text style={styles.title}>Hi, Welcome Back</Text>
         <Text style={styles.subtitle}>Hope you are doing fine</Text>
@@ -211,7 +205,7 @@ const LoginScreen = (props: Props) => {
         <TouchableOpacity onPress={() => props.navigation.navigate('SIGNUP')}>
           <Text style={styles.link}>
             Don't have an account?{' '}
-            <Text style={{color: '#1C64F2'}}>Sign Up</Text>
+            <Text style={{ color: '#1C64F2' }}>Sign Up</Text>
           </Text>
         </TouchableOpacity>
 

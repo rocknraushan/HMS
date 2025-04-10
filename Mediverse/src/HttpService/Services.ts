@@ -3,6 +3,7 @@ const Services = {
   LOGIN: "api/auth/login",
   PROFILE_UPDATE: "api/auth/profile/update",
   PROFILE: "api/auth/profile",
+  FORGOT_PASSWORD: "api/auth/forget-password",
   ROLE: {
     PATIENT: "patient",
     DOCTOR: "doctor",

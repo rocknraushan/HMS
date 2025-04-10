@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, Dimensions, Image, ImageBackground, StatusBar } from 'react-native';
+import { StyleSheet, Image, ImageBackground, StatusBar } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -11,8 +11,7 @@ import { rspH, rspW } from '../../../theme/responsive';
 import Keychain from 'react-native-keychain';
 import { NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../../navigation/navStrings';
-
-const { width, height } = Dimensions.get('window');
+import { Services } from '../../../HttpService';
 interface Props {
   navigation: NavigationProp<RootStackParamList,"SPLASH">;
 }
@@ -24,13 +23,27 @@ const Splash = ({ navigation }: Props) => {
       try {
          const user = await Keychain.getGenericPassword();
               
-        const isLoggedIn = user && user.password
+        const isLoggedIn = user
 
         if (isLoggedIn) {
-          navigation.reset({
-            index: 0,
-            routes: [{ name:"BOTTOMTAB" }],
-          })
+          const {role} = JSON.parse(user.password);
+          switch (role) {
+            case Services.ROLE.DOCTOR:
+              navigation.reset({
+                index: 0,
+                routes: [{ name:"DoctorTab" }],
+              })
+              break;
+            case Services.ROLE.PATIENT:
+              navigation.reset({
+                index: 0,
+                routes: [{ name:"BOTTOMTAB" }],
+              })
+              break;
+          
+            default:
+              break;
+          }
         } else {
           navigation.reset({
             index: 0,

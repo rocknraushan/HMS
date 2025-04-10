@@ -1,7 +1,9 @@
 import axios from 'axios';
 import * as Keychain from 'react-native-keychain';
 
-export const BASE_URL = "http://192.168.112.129:5000/";
+export const BASE_URL = 
+"https://hms-f6xv.onrender.com/";
+// "http://192.168.112.129:5000/";
 
 const getAxiosClient = async () => {
   const client = axios.create({
@@ -13,7 +15,9 @@ const getAxiosClient = async () => {
     try {
       const user = await Keychain.getGenericPassword();
       if (user && user.password) {
-        request.headers.Authorization = `Bearer ${user.password}`;
+        console.log(user.password,"credentials::::::::;")
+        const { token, roles } = JSON.parse(user.password);
+        request.headers.Authorization = `Bearer ${token}`;
       }
     } catch (error) {
       console.log('Error fetching auth token from Keychain:', error);

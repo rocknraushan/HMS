@@ -24,6 +24,7 @@ import RNDateTimePicker from '@react-native-community/datetimepicker';
 import getAxiosClient from '../../HttpService/AxiosClient';
 import {Services} from '../../HttpService';
 import { callProfileUpdateApi, fetchProfile, profileValidation } from './ProfileFunctions';
+import SuccessModal from '../../components/loaders/SuccessModal';
 
 type Props = {
   navigation: NavigationProp<RootStackParamList, 'UserProfileForm'>;
@@ -39,8 +40,10 @@ const initialValues = {
   dob: '',
 };
 const UserProfileForm = (props: Props) => {
+  const [initVal, setInitVal] = useState(initialValues)
   const formikRef = React.useRef<FormikProps<typeof initialValues>>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false)
   const [verificationError, setVerificationError] = useState<string | null>(
     null,
   );
@@ -102,20 +105,43 @@ const UserProfileForm = (props: Props) => {
   async function getProfileData() {
     try {
       const data = await fetchProfile();
-      formikRef.current?.setFieldValue("name",data.profile.name);
-      formikRef.current?.setFieldValue("email",data.profile.email);
-      console.log(data,"user data:::")
+      if(data.profile){
+        const {profile} = data
+        console.log(profile,"data prof")
+        const initValues = {
+          name: profile.name || "",
+          age: profile.age || '',
+          bloodGroup: profile.bloodGroup ||'',
+          phone:profile.phone || '',
+          profilePic: {uri: profile.profilePic || '', type: '', name: ''},
+          gender: profile.gender||'',
+          email: profile.email ||'',
+          dob:profile.dob || '',
+        };
+        setInitVal(initValues)
+      }
     } catch (error) {
       
     }
   }
 
+  const handleDobChange = (event:any, selectedDate:any) => {
+    const currentDate = selectedDate || new Date();
+    setShowDatePicker(false);
+    formikRef.current?.setFieldValue(
+      'dob',
+      currentDate.toLocaleDateString(),
+    );
+    const age = new Date().getFullYear() - currentDate.getFullYear();
+    formikRef.current?.setFieldValue('age', String(age));
+  }
 
   useEffect(()=>{
     getProfileData();
   },[])
   return (
     <View style={styles.flex}>
+      <SuccessModal title='Congratulations!' subTitle='Your account is ready to use. You will be redirected to the Home Page in a few seconds...' duration={5000} visible={showSuccess} onClose={()=>setShowSuccess(false)}/>
       <SafeAreaView>
         <View style={styles.container}>
           <VectorIcons
@@ -145,9 +171,10 @@ const UserProfileForm = (props: Props) => {
           keyboardShouldPersistTaps="handled"
           style={styles.scrollContainer}>
           <Formik
-            initialValues={initialValues}
+            initialValues={initVal}
             innerRef={formikRef}
             validationSchema={profileValidation}
+            enableReinitialize
             onSubmit={updateProfile}>
             {({
               handleChange,
@@ -190,25 +217,6 @@ const UserProfileForm = (props: Props) => {
                   resendLoading={resendLoading}
                   isVerified={isVerified}
                   onSubmitOtp={handleOtpSubmit}
-                />
-                <CustomInput
-                  placeholder="Age"
-                  value={values.age}
-                  onChangeText={handleChange('age')}
-                  error={touched.age && errors.age}
-                  extra={{
-                    keyboardType: 'numeric',
-                    inputMode: 'numeric',
-                  }}
-                  leftIcon={
-                    <VectorIcons
-                      name="cake"
-                      size={20}
-                      color="#9CA3AF"
-                      iconSet={IconSets.MaterialIcons}
-                    />
-                  }
-                  containerStyle={styles.fieldMargin}
                 />
                 <StyledDropdown
                   data={[
@@ -277,6 +285,26 @@ const UserProfileForm = (props: Props) => {
                     containerStyle={styles.fieldMargin}
                   />
                 </Pressable>
+                <CustomInput
+                  placeholder="Age"
+                  value={values.age}
+                  onChangeText={handleChange('age')}
+                  error={touched.age && errors.age}
+                  extra={{
+                    keyboardType: 'numeric',
+                    inputMode: 'numeric',
+                    editable: false,
+                  }}
+                  leftIcon={
+                    <VectorIcons
+                      name="cake"
+                      size={20}
+                      color="#9CA3AF"
+                      iconSet={IconSets.MaterialIcons}
+                    />
+                  }
+                  containerStyle={styles.fieldMargin}
+                />
                 <PromiseButton
                   onPress={handleSubmit}
                   text="Login"
@@ -301,14 +329,7 @@ const UserProfileForm = (props: Props) => {
             onTouchEnd={() => setShowDatePicker(false)}
             themeVariant="light"
             display="default"
-            onChange={(event, selectedDate) => {
-              const currentDate = selectedDate || new Date();
-              setShowDatePicker(false);
-              formikRef.current?.setFieldValue(
-                'dob',
-                currentDate.toLocaleDateString(),
-              );
-            }}
+            onChange={handleDobChange}
           />
         )}
       </KeyboardAvoidingView>

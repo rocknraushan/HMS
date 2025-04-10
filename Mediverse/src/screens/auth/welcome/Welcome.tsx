@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { FlatList, Image, LayoutAnimation, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Image, LayoutAnimation, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { rspF, rspH, rspW, scrn_height, scrn_width } from '../../../theme/responsive';
 import fontFM from '../../../theme/fontFM';
 import CButton from '../../../components/CustomButton/CButton';
@@ -27,7 +27,7 @@ const Welcome = ({ navigation, route }: Props) => {
       const dotSize = interpolate(
         distanceFromCenter,
         [0, scrn_width], // Closer to the current index (0) -> bigger size, farther away -> smaller size
-        [20, 10], // Output size range
+        [30, 10], // Output size range
         'clamp'
       );
 
@@ -60,6 +60,7 @@ const Welcome = ({ navigation, route }: Props) => {
         backgroundColor="transparent"
         barStyle="dark-content"
       />
+      
       <View style={{ height: '70%' }}>
 
         <FlatList
@@ -67,6 +68,7 @@ const Welcome = ({ navigation, route }: Props) => {
           data={welcomeScreens}
           horizontal
           pagingEnabled
+          showsHorizontalScrollIndicator={false}
           renderItem={({ item, index }: { item: WelconDataType, index: number }) => <LandingScreen index={index} item={item} />}
           keyExtractor={(item, inex) => item.id.toString()}
           onScroll={(event) => {
@@ -78,15 +80,19 @@ const Welcome = ({ navigation, route }: Props) => {
           contentContainerStyle={{ flexGrow: 1 }}
         />
       </View>
-      <View style={styles.dotsContainer}>
-        {welcomeScreens.map((_, index) => renderDot(index))}
-      </View>
+      
 
       <CButton
         extraStyle={{ marginTop: rspH(24), alignSelf: "center" }}
         title={"Next"}
         onPress={() => handleNextPress()}
       />
+      <View style={styles.dotsContainer}>
+        {welcomeScreens.map((_, index) => renderDot(index))}
+      </View>
+      <TouchableOpacity style={styles.skipWraper} onPress={() => navigation.navigate("LOGIN")}>
+        <Text style={styles.skiptext}>Skip</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -94,6 +100,19 @@ const Welcome = ({ navigation, route }: Props) => {
 export default Welcome;
 
 const styles = StyleSheet.create({
+  skiptext: {
+    fontSize: rspF(14),
+    color: "rgba(107, 114, 128, 1)",
+    fontFamily: fontFM.regular,
+    fontWeight:"700",
+  },
+  skipWraper: {
+    padding:8,
+    borderRadius:100,
+    alignItems:"center",
+    justifyContent:'center',
+    marginTop:20
+  },
   cont_subtext: {
     fontSize: rspF(15),
     color: '#6B7280',

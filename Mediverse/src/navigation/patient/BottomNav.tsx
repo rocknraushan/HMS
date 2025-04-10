@@ -2,12 +2,12 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React, { useEffect } from 'react';
 import { Image, TouchableOpacity, View } from 'react-native';
-import { Icons } from '../assets/icons';
-import VectorIcons, { IconSets } from '../components/Icons/VectorIcons';
-import { useUser } from '../context/user';
-import * as screens from '../screens';
-import { rspF, rspW } from '../theme/responsive';
-import { RootStackParamList } from './navStrings';
+import { Icons } from '../../assets/icons';
+import VectorIcons, { IconSets } from '../../components/Icons/VectorIcons';
+import { useUser } from '../../context/user';
+import * as screens from '../../screens';
+import { rspF, rspW } from '../../theme/responsive';
+import { RootStackParamList } from '../navStrings';
 
 const TabBarIcon = ({
   color,

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, Image, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, Image, ScrollView, Platform, KeyboardAvoidingView, Modal } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { navStrings, RootStackParamList } from '../../../navigation/navStrings';
 import axios from 'axios';
@@ -10,47 +10,52 @@ import CustomInput from '../../../components/CustomInput/CustomInput';
 import { Icons } from '../../../assets/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Keychain from 'react-native-keychain';
+import ChooseRoleScreen from '../welcome/ChooseRoleScreen';
+import StyledDropdown from '../../../components/Dropdown/StyledDropdown';
+import { Formik, FormikHandlers, FormikProps } from 'formik';
 
 const { height, width } = Dimensions.get('window');
-
+const initialValue ={
+  email:'',
+  password:'',
+  name:'',
+  role:Services.ROLE.PATIENT,
+  document:''
+}
 type Props = {
   navigation: NavigationProp<RootStackParamList, 'SIGNUP'>
 
 }
 const SignupScreen = (props: Props) => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleSignup = async () => {
-    console.log('Username:', username, Config.BASE_URL);
-    console.log('Email:', email);
-    console.log('Password:', password);
+  const [roleChooser, setRoleChooser] = useState(true)
+   const formikRef = React.useRef<FormikProps<typeof initialValue>>(null);
+  const handleSignup = async (values:typeof initialValue) => {
+    console.log('Username:', values.name, Config.BASE_URL);
+    console.log('Email:', values.email);
+    console.log('Password:', values.password);
 
     try {
       const client = await getAxiosClient();
       const deviceToken = await AsyncStorage.getItem('fcmToken');
       const response = await client.post(Services.REGISTER, {
-        email: email,
-        password: password,
-        role: Services.ROLE.PATIENT,
-        name: username,
+        ...values,
         deviceToken: deviceToken ?? '',
         plateform: Platform.OS
       });
       if (response.data.token) {
         try {
-          await Keychain.setGenericPassword('token', response.data.token);
+          console.log(response.data)
+          await Keychain.setGenericPassword(values.email, JSON.stringify(response.data));
         } catch (error) {
           console.log(error, 'error in setting token');
         }
-        if(response.data.firstLogin) {
+        if (response.data.firstLogin) {
           props.navigation.navigate('UserProfileForm');
         } else
-        props.navigation.reset({
-          index: 0,
-          routes: [{name: 'BOTTOMTAB'}],
-        });
+          props.navigation.reset({
+            index: 0,
+            routes: [{ name: 'BOTTOMTAB' }],
+          });
       }
       console.log(response, 'Registration response');
     } catch (error: any) {
@@ -61,73 +66,110 @@ const SignupScreen = (props: Props) => {
     }
   };
 
+ const handleProffesion = ()=>{
+    formikRef.current?.setFieldValue("role","doctor");
+    setRoleChooser(false)
+  }
+
   return (
     // <View style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-      >
-      <ScrollView 
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
+      <Modal statusBarTranslucent visible={roleChooser} style={{ flex: 1 }}>
+        <ChooseRoleScreen onProfessionalSelect={handleProffesion} done={() => setRoleChooser(false)} />
+      </Modal>
+      <ScrollView
         showsVerticalScrollIndicator={false}
         bounces={false}
-      keyboardShouldPersistTaps="always" keyboardDismissMode='on-drag' automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 120 }}>
+        keyboardShouldPersistTaps="always" keyboardDismissMode='on-drag' automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 120 }}>
         <Image source={Icons.appLogo} style={{ width: 100, height: 100, resizeMode: 'contain', alignSelf: 'center', marginVertical: 10 }} />
 
         <Text style={styles.title}>Create an Account</Text>
         <Text style={styles.subtitle}>Please sign up to continue</Text>
+        <Formik
+          innerRef={formikRef}
+          initialValues={initialValue}
+          // validationSchema={validationSchema}
+          onSubmit={handleSignup}>
+          {({
+            values,
+            handleChange,
+            errors,
+            touched,
+            handleSubmit,
+            isSubmitting,
+          }) => {
+            return (
+              <>
+                {/* Username Input */}
+                <CustomInput
+                  value={values.name}
+                  onChangeText={handleChange('name')}
+                  placeholder='Your name'
+                  leftIcon={
+                    <Image source={Icons.userIcon} style={styles.iconStyle} />
+                  }
+                  error={touched.name && errors.name}
+                />
 
-        {/* Username Input */}
-        <CustomInput
-          value={username}
-          onChangeText={setUsername}
-          placeholder='Your name'
-          leftIcon={
-            <Image source={Icons.userIcon} style={styles.iconStyle} />
-          }
-          error=''
-        />
-
-        {/* Email Input */}
-        <CustomInput
-          extra={
-            {
-              keyboardType: "email-address",
-              inputMode: "email"
-            }
-          }
-          leftIcon={
-            <Image source={Icons.smsIcon} style={styles.iconStyle} />
-          }
-          error=''
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <CustomInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          extra={
-            {
-              keyboardType: "visible-password",
-              inputMode: "text"
-            }
-          }
-          isPassword
-          error=''
-          leftIcon={
-            <Image source={Icons.lockIcon} style={styles.iconStyle} />
-          }
-        />
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
-          <Text style={styles.buttonText}>Sign Up</Text>
-        </TouchableOpacity>
+                {/* Email Input */}
+                <CustomInput
+                  extra={
+                    {
+                      keyboardType: "email-address",
+                      inputMode: "email"
+                    }
+                  }
+                  leftIcon={
+                    <Image source={Icons.smsIcon} style={styles.iconStyle} />
+                  }
+                  error={touched.email && errors.email}
+                  placeholder="Email"
+                  value={values.email}
+                  onChangeText={handleChange('email')}
+                />
+                <CustomInput
+                  placeholder="Password"
+                  value={values.password}
+                  onChangeText={handleChange("password")}
+                  extra={
+                    {
+                      keyboardType: "visible-password",
+                      inputMode: "text"
+                    }
+                  }
+                  isPassword
+                  error={touched.password && errors.password}
+                  leftIcon={
+                    <Image source={Icons.lockIcon} style={styles.iconStyle} />
+                  }
+                />
+                {values.role !== Services.ROLE.PATIENT && <StyledDropdown
+                  data={[
+                    { label: "Doctor", value: "doctor" },
+                    { label: "Nurse", value: "nurse" }
+                  ]}
+                  placeholder="Selecr Profession"
+                  value={values.role}
+                  onChangeText={handleChange('role')}
+                  error={touched.role && errors.role}
+                  style={{marginBottom:16}}
+                />}
+                <TouchableOpacity style={styles.button} onPress={()=>handleSubmit()}>
+                  <Text style={styles.buttonText}>Sign Up</Text>
+                </TouchableOpacity>
+              </>
+            )
+          }}
+            </Formik>
         <TouchableOpacity onPress={() => props.navigation.navigate("LOGIN")}>
           <Text style={styles.link}>Already have an account? Login</Text>
         </TouchableOpacity>
       </ScrollView>
-      </KeyboardAvoidingView>
+    </KeyboardAvoidingView>
     // </View>
   );
 };

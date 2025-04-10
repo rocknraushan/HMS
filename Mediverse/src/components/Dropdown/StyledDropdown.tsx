@@ -70,14 +70,15 @@ const StyledDropdown = ({
           paddingHorizontal: 16,
           paddingVertical: 4,
           margin: 0,
-          height: 30,
         }}
+
         renderItem={item => {
           return (
-            <View>
+            <View style={{padding:10}} >
               <Text
                 style={{
                   color: theme.Black,
+
                 }}>
                 {item.label}
               </Text>

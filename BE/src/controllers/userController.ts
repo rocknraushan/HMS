@@ -55,11 +55,11 @@ export async function createUser(req: Request, res: Response): Promise<any> {
       { id: user._id, role: user.role },
       process.env.JWT_SECRET || "",
       {
-        expiresIn: "1h",
+        expiresIn: "7d",
       }
     );
 
-    res.status(201).json({ token: token, firstLogin: user.firstLogin });
+    res.status(201).json({ token: token, firstLogin: user.firstLogin,role: user.role });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
@@ -95,11 +95,9 @@ export async function userLogin(req: Request, res: Response): Promise<any> {
           const token = jwt.sign(
             { id: user._id, role: user.role },
             process.env.JWT_SECRET || "",
-            { expiresIn: "1h" }
+            { expiresIn: "7d" }
           );
-          return res
-            .status(201)
-            .json({ token: token, firstLogin: user.firstLogin });
+          return  res.status(201).json({ token: token, firstLogin: user.firstLogin,role: user.role });
         } else {
           if (
             socialUser.socialData &&
@@ -113,7 +111,7 @@ export async function userLogin(req: Request, res: Response): Promise<any> {
             { id: socialUser._id, role: socialUser.role },
             process.env.JWT_SECRET || "",
             {
-              expiresIn: "1h",
+              expiresIn: "7d",
             }
           );
           await DeviceToken.create({
@@ -141,11 +139,11 @@ export async function userLogin(req: Request, res: Response): Promise<any> {
           { id: user._id, role: user.role },
           process.env.JWT_SECRET || "",
           {
-            expiresIn: "1h",
+            expiresIn: "7d",
           }
         );
 
-        res.status(200).json({ token: token, firstLogin: user.firstLogin });
+        res.status(201).json({ token: token, firstLogin: user.firstLogin,role: user.role });
     }
   } catch (err) {
     console.error("Login error:", err);
@@ -163,13 +161,12 @@ export async function forgetPassword(
     // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found",errors: { email: "Email not registered" } });
     }
 
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpiry = Date.now() + 60 * 60 * 1000; // 1 hour expiry
-
-    // Save the token and expiry in the user database
+    const resetTokenExpiry = Date.now() + 60 * 60 * 1000; 
+    
     user.resetPasswordToken = resetToken;
     user.resetPasswordExpiry = resetTokenExpiry;
     await user.save();
@@ -179,7 +176,7 @@ export async function forgetPassword(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET || "",
       {
-        expiresIn: "1h",
+        expiresIn: "7d",
       }
     );
 
@@ -285,7 +282,7 @@ export async function updateProfile(req: Request, res: Response): Promise<any> {
 export async function getProfile(req: Request, res: Response): Promise<any> {
   try {
     //@ts-ignore
-    const userId = req.user?._id; // assuming middleware adds `user` to `req`
+    const userId = req.user?._id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
     const user = await User.findById(userId).select(

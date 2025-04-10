@@ -10,7 +10,7 @@ interface Props {
 }
 
 const ProfilePicUploader: React.FC<Props> = ({image, onSelect}) => {
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageUri, setImageUri] = useState<string | null>(image || null);
 
   const chooseImage = useCallback(() => {
     ImageCropPicker.openPicker({

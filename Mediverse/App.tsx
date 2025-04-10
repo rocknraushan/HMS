@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import defaultTheme, { light_theme, dark_theme, Theme } from './src/theme/colors';
 import messaging from "@react-native-firebase/messaging";
 import fcmService from './src/notification/FcmService';
+import NotificationService from './src/notification/NotificationService';
 
 
 export const ThemeContext = createContext<{
@@ -51,6 +52,8 @@ const App = () => {
         text2: remoteMessage.notification?.body,
         visibilityTime: 5000,
       });
+      if (remoteMessage.notification)
+        NotificationService.onDisplayNotification(remoteMessage.notification);
     });
 
     const unsubscribeOnNotificationOpenedApp = messaging().onNotificationOpenedApp(remoteMessage => {
@@ -64,6 +67,11 @@ const App = () => {
           console.log('Notification caused app to open from quit state:', remoteMessage.notification);
         }
       });
+    messaging().setBackgroundMessageHandler(async remoteMessage => {
+      console.log('Message handled in the background!', remoteMessage.notification);
+      if (remoteMessage.notification)
+        NotificationService.onDisplayNotification(remoteMessage.notification);
+    });
 
     return () => {
       unsubscribeOnMessage();

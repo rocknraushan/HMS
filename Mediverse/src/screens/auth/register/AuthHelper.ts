@@ -2,6 +2,7 @@ import { GoogleSignin, statusCodes, User } from '@react-native-google-signin/goo
 import getAxiosClient from '../../../HttpService/AxiosClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Services } from '../../../HttpService';
+import * as Keychain from "react-native-keychain"
 GoogleSignin.configure();
 
 interface GoogleSignInResult {
@@ -55,6 +56,7 @@ export async function CallLoginApi(data: LoginData): Promise<any> {
                 deviceToken: deviceToken,
                 socialData: data.socialData
             });
+            await Keychain.setGenericPassword(data.email ?? "user", JSON.stringify(response.data));
             resolve(response.data);
         } catch (error) {
             console.error('Failed to get Google sign-in data:', error);

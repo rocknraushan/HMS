@@ -1,7 +1,8 @@
 import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
+import { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 
 class NotificationService {
-    async onDisplayNotification(title: string, body: string) {
+    async onDisplayNotification(notification:FirebaseMessagingTypes.Notification) {
         // Create a channel (required for Android)
         const channelId = await notifee.createChannel({
             id: 'default',
@@ -11,8 +12,8 @@ class NotificationService {
 
         // Display a notification
         await notifee.displayNotification({
-            title: title,
-            body: body,
+            title: notification.title,
+            body: notification.body,
             android: {
                 channelId,
                 smallIcon: 'ic_launcher', // optional, defaults to 'ic_launcher'.
