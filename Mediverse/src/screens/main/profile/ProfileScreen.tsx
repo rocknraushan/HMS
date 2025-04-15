@@ -60,7 +60,7 @@ const ProfileScreen = ({ navigation }: Props) => {
 
         <View style={styles.avatarContainer}>
           <FastImage
-            source={profileData?.profilePic ? { uri: profileData?.profilePic } : Icons.userIcon} // replace with your image
+            source={profileData?.profilePic ? { uri: profileData?.profilePic } : profileData?.socialData?.photo ? {uri:profileData?.socialData?.photo}: Icons.userIcon} // replace with your image
             style={styles.avatar}
           />
           <TouchableOpacity style={styles.editIconContainer}>

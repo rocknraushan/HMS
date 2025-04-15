@@ -5,7 +5,7 @@ import { RootStackParamList } from '../../../navigation/navStrings'
 import CustomInput from '../../../components/CustomInput/CustomInput'
 import PromiseButton from '../../../components/CustomButton/PromiseButton'
 import { Icons } from '../../../assets/icons'
-import { Formik, FormikHelpers } from 'formik'
+import { Formik, FormikHelpers, FormikProps } from 'formik'
 import * as Yup from 'yup'
 import fontFM from '../../../theme/fontFM'
 import { rspH } from '../../../theme/responsive'
@@ -24,7 +24,8 @@ type Props = {
 }
 
 const ForgetPassword = ({ navigation }: Props) => {
-    const [successMsg, setSuccessMsg] = useState(false)
+    const [successMsg, setSuccessMsg] = useState(false);
+      const formikRef = React.useRef<FormikProps<typeof initialVal>>(null);
 
     const handleSendCode = async (values: typeof initialVal, helpers: FormikHelpers<{
         email: string;
@@ -35,7 +36,12 @@ const ForgetPassword = ({ navigation }: Props) => {
                 email: values.email
             });
             console.log(response.data, 'FORGET response');
-            setSuccessMsg(true)
+            if(response.status == 200){
+                setSuccessMsg(true)
+                setTimeout(() => {
+                    navigation.navigate("ChangePasswordScreen", {otpRequired:true, email: values.email })
+                }, 2000);
+            }
         } catch (error: any) {
             console.error('Registration error:', error.response.data);
             if (error.response.data.errors)
@@ -43,16 +49,21 @@ const ForgetPassword = ({ navigation }: Props) => {
         }
     };
 
+    const closeSuccessModal = () => {
+        setSuccessMsg(false)
+        navigation.navigate("ChangePasswordScreen", {otpRequired:true, email: formikRef.current?.values.email?? "" })
+    }
 
     return (
         <View style={styles.container}>
-            <SuccessModal visible={successMsg} duration={10000} onClose={()=>setSuccessMsg(false)} title='Success' subTitle='Kindly check your mail, we have sent a reset link.'/>
+            <SuccessModal visible={successMsg} duration={10000} onClose={closeSuccessModal} title='Success' subTitle='Kindly check your mail, we have sent a reset link.'/>
             <ScrollView keyboardShouldPersistTaps="always" keyboardDismissMode='on-drag' automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 120 }}>
                 <Image source={Icons.appLogo} style={{ width: 100, height: 100, resizeMode: 'contain', alignSelf: 'center', marginTop: 10 }} />
                 <Text style={{ fontFamily: "Poppins", fontSize: 20, color: "#999", alignSelf: 'center', textAlign: 'center' }}>Medi<Text style={{ color: "#111928" }}>verse</Text></Text>
                 <Text style={{ fontFamily: fontFM.semiBold, fontSize: 25, color: "#1C2A3A", alignSelf: 'center', textAlign: 'center', marginTop: rspH(32) }}>Forget Password?</Text>
                 <Text style={styles.subtitle}>Enter your Email, we will send you a verification code.</Text>
                 <Formik
+                    innerRef={formikRef}
                     initialValues={initialVal}
                     validationSchema={validationSchema}
                     onSubmit={handleSendCode}>
@@ -74,7 +85,8 @@ const ForgetPassword = ({ navigation }: Props) => {
                                     extra={
                                         {
                                             keyboardType: "email-address",
-                                            inputMode: "email"
+                                            inputMode: "email",
+                                            onSubmitEditing:()=>handleSubmit()
                                         }
                                     }
                                     leftIcon={

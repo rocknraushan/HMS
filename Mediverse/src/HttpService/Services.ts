@@ -4,6 +4,8 @@ const Services = {
   PROFILE_UPDATE: "api/auth/profile/update",
   PROFILE: "api/auth/profile",
   FORGOT_PASSWORD: "api/auth/forget-password",
+  CHANGE_PASSWORD: "api/auth/change-password",
+  VERIFY_OTP: "api/auth/verify-otp",
   ROLE: {
     PATIENT: "patient",
     DOCTOR: "doctor",

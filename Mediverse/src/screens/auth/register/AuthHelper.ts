@@ -65,3 +65,50 @@ export async function CallLoginApi(data: LoginData): Promise<any> {
     })
 
 }
+
+export async function callOtpVerifyAPI(data:{email:string,otp:string,password:string}):Promise<any>{
+    return new Promise<void>(async (resolve, reject) => {
+        try {
+            const client = await getAxiosClient();
+            const response = await client.post(Services.VERIFY_OTP, {
+                email: data.email,
+                otp: data.otp,
+                newPassword: data.password
+            });
+            resolve(response.data);
+        } catch (error) {
+            console.error('Failed to verify otp:', error);
+            reject(error);
+        }
+    })
+}
+export async function callForgetPasswordAPI(email:string):Promise<any>{
+    return new Promise<void>(async (resolve, reject) => {
+        try {
+            const client = await getAxiosClient();
+            const response = await client.post(Services.FORGOT_PASSWORD, {
+                email: email,
+            });
+            resolve(response.data);
+        } catch (error) {
+            console.error('Failed to get Google sign-in data:', error);
+            reject(error);
+        }
+    })
+}
+export async function callChangePasswordAPI(email:string, password:string, otp:string):Promise<any>{
+    return new Promise<void>(async (resolve, reject) => {
+        try {
+            const client = await getAxiosClient();
+            const response = await client.post(Services.CHANGE_PASSWORD, {
+                email: email,
+                password: password,
+                otp: otp
+            });
+            resolve(response.data);
+        } catch (error) {
+            console.error('Failed to get Google sign-in data:', error);
+            reject(error);
+        }
+    })
+}

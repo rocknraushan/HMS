@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
         borderRadius: 30,
         alignItems: 'center',
-        marginBottom: 15,
+        marginVertical: 15,
     },
     buttonText: {
         color: '#fff',

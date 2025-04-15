@@ -7,11 +7,14 @@ import DeviceToken from "../models/devices";
 import * as admin from "firebase-admin";
 import streamifier from 'streamifier';
 import cloudinary from "../config/cludinary";
+import otpGenerator from 'otp-generator'
+import bcrypt from "bcryptjs";
 
-const FRONTEND_APP_URL = process.env.FRONTEND_APP_URL || "mediverse://";
+const FRONTEND_APP_URL ="http://www.evaidhya.site/";
 
 export async function createUser(req: Request, res: Response): Promise<any> {
-  console.log("request body", req.body);
+  // TODO: add validation to validate the socail data and email  using google client
+
   const { name, email, password, role, deviceToken, plateform } = req.body;
 
   try {
@@ -66,6 +69,7 @@ export async function createUser(req: Request, res: Response): Promise<any> {
 }
 
 export async function userLogin(req: Request, res: Response): Promise<any> {
+  // TODO: add validation to validate the socail data and email  using google client
   const { email, password, loginType, socialData, plateform, deviceToken } =
     req.body;
 
@@ -151,72 +155,116 @@ export async function userLogin(req: Request, res: Response): Promise<any> {
   }
 }
 
-export async function forgetPassword(
-  req: Request,
-  res: Response
-): Promise<any> {
+export async function forgetPassword(req: Request, res: Response): Promise<any> {
   try {
     const { email } = req.body;
 
     // Check if user exists
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
-      return res.status(404).json({ message: "User not found",errors: { email: "Email not registered" } });
+      return res.status(404).json({
+        message: "User not found",
+        errors: { email: "Email not registered" }
+      });
     }
 
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpiry = Date.now() + 60 * 60 * 1000; 
-    
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpiry = resetTokenExpiry;
+    // Generate OTP
+    const otp = otpGenerator.generate(6, {
+      digits: true,
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false
+    });
+
+    const otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    // Save OTP and expiry to the user model
+    user.resetPasswordToken = otp;
+    user.resetPasswordExpiry = otpExpiry;
     await user.save();
 
-    // Generate JWT for secure reset link
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || "",
-      {
-        expiresIn: "7d",
-      }
-    );
-
-    // Construct the reset URL
-    const resetURL = `${FRONTEND_APP_URL}reset-password/${token}`;
-    const cred = {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    };
-    console.log(cred, "credentials::::::");
     // Configure Nodemailer
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
+        pass: process.env.EMAIL_PASS
+      }
     });
 
-    // Email options
+    // Email content
     const mailOptions = {
       from: "no-reply@mediverse.com",
       to: email,
-      subject: "Password Reset Request",
-      text: `Click the link to reset your password: ${resetURL}`,
-      html: `<p>Click the link below to reset your password:</p><a href="${resetURL}">${resetURL}</a>`,
+      subject: "Your Mediverse Password Reset OTP",
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
+          <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+            <h2 style="color: #2c3e50;">Password Reset OTP</h2>
+            <p>Hello,</p>
+            <p>Your OTP for resetting your password is:</p>
+            <h1 style="color: #007BFF;">${otp}</h1>
+            <p>This OTP will expire in 10 minutes.</p>
+            <p>If you didn’t request this, you can safely ignore this email.</p>
+            <p>Thanks,<br/>The Mediverse Team</p>
+          </div>
+        </div>
+      `
     };
 
-    // Send email
+    // Send the email
     await transporter.sendMail(mailOptions);
 
-    res
-      .status(200)
-      .json({ message: "Password reset link sent to your email." });
+    return res.status(200).json({
+      message: "OTP sent to your email. Please check your inbox."
+    });
+
   } catch (error) {
-    console.error(error);
+    console.error("Error in forgetPassword:", error);
     res.status(500).json({ message: "An error occurred.", error });
   }
 }
 
+export async function verifyOtpAndResetPassword(req: Request, res: Response): Promise<any> {
+  try {
+    const { email, otp, newPassword } = req.body;
+    console.log(req.body, "body")
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Find user
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check OTP and expiry
+    console.log(user.resetPasswordToken, "user otp")
+    console.log(user.resetPasswordExpiry, "user otp expiry")
+    if (
+      user.resetPasswordToken !== otp ||
+      !user.resetPasswordExpiry ||
+      Date.now() > user.resetPasswordExpiry
+    ) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    // Hash new password
+
+    // Update password and clear OTP fields
+    user.password = newPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpiry = null;
+    await user.save();
+
+    return res.status(200).json({ message: "Password reset successful" });
+
+  } catch (error) {
+    console.error("Error in verifyOtpAndResetPassword:", error);
+    res.status(500).json({ message: "An error occurred.", error });
+  }
+}
 
 
 export async function updateProfile(req: Request, res: Response): Promise<any> {

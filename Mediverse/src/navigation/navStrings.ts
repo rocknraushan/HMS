@@ -5,7 +5,7 @@ export type RootStackParamList = {
   ChooseRoleScreen: undefined;
   WELCOME: undefined;
   SELECT_LANGUAGE: { hideBack?: boolean };
-  ChangePasswordScreen: { token: string };
+  ChangePasswordScreen: { token?: string,otpRequired:boolean, email: string  };
   ForgetPassword: undefined;
   HOME: undefined;
   LOGIN:undefined;

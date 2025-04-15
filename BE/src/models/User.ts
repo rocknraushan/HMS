@@ -9,8 +9,8 @@ export interface IUser extends Document {
   password: string;
   role: "doctor" | "nurse" | "admin" | "patient";
   matchPassword(enteredPassword: string): Promise<boolean>;
-  resetPasswordToken: string;
-  resetPasswordExpiry: number;
+  resetPasswordToken: string | null;
+  resetPasswordExpiry: number | null;
   profilePic: string;
   socialData: any;
   dob: string;
@@ -33,6 +33,8 @@ const userSchema: Schema<IUser> = new Schema({
   gender: { type: String, required: false },
   phone: { type: String, required: false },
   firstLogin: { type: Boolean, default: true },
+  resetPasswordExpiry: { type: Number, default: null },
+  resetPasswordToken: { type: String, default: null },
   role: {
     type: String,
     enum: ["doctor", "nurse", "admin", "patient"],

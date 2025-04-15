@@ -33,6 +33,15 @@
                     android:scheme="mediverse"
                     android:pathPattern="/.*" />
             </intent-filter>
+            <intent-filter android:label="Deep Link for Evaidhya">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="http"
+                    android:host="www.evaidhya.site"
+                    android:pathPrefix="/" />
+            </intent-filter>
       </activity>
     </application>
 </manifest>

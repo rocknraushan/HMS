@@ -21,8 +21,11 @@ const StackNav = () => {
       <Stack.Screen name="SIGNUP" component={SignupScreen} options={{ navigationBarColor: '#f8f8f8', statusBarStyle: "dark", statusBarBackgroundColor: "#f8f8f8" }} />
       <Stack.Screen name='WELCOME' component={Welcome} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true, statusBarTranslucent:true }} />
       <Stack.Screen name="BOTTOMTAB" component={BottomNav} options={{statusBarBackgroundColor:"#fff", navigationBarColor: '#f8f8f8', navigationBarTranslucent: true,statusBarStyle:"dark"}} />
+      
       <Stack.Screen name="ForgetPassword" component={ForgetPassword} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true }} />
-      <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true }} />
+      <Stack.Screen name="ChangePasswordScreen" 
+      //@ts-ignore
+      component={ChangePasswordScreen} initialParams={{email:"",otpRequred:true,token:""}} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true,statusBarAnimation:"slide",animation:"flip",statusBarTranslucent:true, statusBarBackgroundColor:"#f8f8f8", statusBarStyle:"dark",headerShown:true, headerTitle:"Reset Password" }} />
       <Stack.Screen name="UserProfileForm" component={UserProfileForm} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true,statusBarStyle:"dark",statusBarBackgroundColor:"transparent" }} />
       <Stack.Screen name="DoctorTab" component={BottomNav} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true, statusBarTranslucent:true }} />
     </Stack.Navigator>
