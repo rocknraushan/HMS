@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, InteractionManager } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, InteractionManager, Pressable } from 'react-native';
 import IconWithTextRow from './components/IconWithTextRow';
 import { BellIcon, EditIcon, EditProfileIcon, HeartIcon, HelpIcon, LogoutIcon, SettingsIcon, TermsIcon } from '../../../assets/icons/svg/SvgIcons';
 import { Icons } from '../../../assets/icons';
@@ -9,6 +9,7 @@ import { fetchProfile } from '../../profile/ProfileFunctions';
 import FastImage from 'react-native-fast-image';
 import Kechain from 'react-native-keychain';
 import LogoutBottomSheet from './components/LogoutBottomSheet';
+import ProfilePicUploader from '../../profile/components/ProfilePicUploader';
 
 interface Props {
   navigation: NavigationProp<RootStackParamList, "PROFILE_HOME">;
@@ -58,15 +59,20 @@ const ProfileScreen = ({ navigation }: Props) => {
       <ScrollView contentContainerStyle={styles.container} style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Profile</Text>
 
-        <View style={styles.avatarContainer}>
+        {/* <TouchableOpacity style={styles.avatarContainer}>
           <FastImage
             source={profileData?.profilePic ? { uri: profileData?.profilePic } : profileData?.socialData?.photo ? {uri:profileData?.socialData?.photo}: Icons.userIcon} // replace with your image
             style={styles.avatar}
           />
-          <TouchableOpacity style={styles.editIconContainer}>
+          <Pressable style={styles.editIconContainer}>
             <EditIcon />
-          </TouchableOpacity>
-        </View>
+          </Pressable>
+        </TouchableOpacity> */}
+
+        <ProfilePicUploader
+          onSelect={(e) => console.log('profilePic', e)}
+          image={profileData?.profilePic}
+        />
 
         <Text style={styles.name}>{profileData?.name}</Text>
         <Text style={styles.phone}>{profileData?.phone}</Text>
@@ -78,7 +84,7 @@ const ProfileScreen = ({ navigation }: Props) => {
           <IconWithTextRow icon={<SettingsIcon />} label="Settings" />
           <IconWithTextRow icon={<TermsIcon />} label="Help and Support" />
           <IconWithTextRow icon={<HelpIcon />} label="Terms and Conditions" />
-          <IconWithTextRow icon={<LogoutIcon />} label="Log Out" onPress={()=>setShowLogout(true)} />
+          <IconWithTextRow icon={<LogoutIcon />} label="Log Out" onPress={() => setShowLogout(true)} />
         </View>
       </ScrollView>
       <LogoutBottomSheet

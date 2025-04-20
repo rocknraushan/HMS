@@ -1,4 +1,5 @@
 import NetInfo from '@react-native-community/netinfo';
+import 'react-native-get-random-values';
 import _ from 'lodash';
 import React, { useEffect, useState, createContext } from 'react';
 import Navigation from './src/navigation/Route';
