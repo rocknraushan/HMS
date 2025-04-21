@@ -43,22 +43,26 @@ type Props = {
 
 const LoginScreen = (props: Props) => {
   const formikRef = React.useRef<FormikProps<typeof initialVal>>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleLogin = async () => {
     try {
+      setLoading(true)
       const response = await CallLoginApi({
         email: formikRef.current?.values.email,
         password: formikRef.current?.values.password,
         loginType: 'email',
         plateform: Platform.OS
       });
+
+      console.log("response ===>", response)
       if (response) {
         if (response.firstLogin) {
           props.navigation.navigate('UserProfileForm');
         } else
           props.navigation.reset({
-            index:0,
-           routes:[{name:"BOTTOMTAB"}]
+            index: 0,
+            routes: [{ name: "BOTTOMTAB" }]
           }
           )
 
@@ -68,12 +72,18 @@ const LoginScreen = (props: Props) => {
       if (error.response.data)
         formikRef.current?.setErrors(error.response.data);
     }
+    finally {
+      setLoading(false)
+
+    }
+
   };
   async function handleSocialLogin() {
     const { idToken, accessToken, user } = await handleGoogleSignIn();
     console.log(idToken, accessToken, user, 'google response');
     if (user.id) {
       try {
+        setLoading(true)
         const response = await CallLoginApi({
           email: user.email,
           password: '',
@@ -99,6 +109,9 @@ const LoginScreen = (props: Props) => {
         if (error.response.data)
           formikRef.current?.setErrors(error.response.data);
       }
+      finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -108,6 +121,7 @@ const LoginScreen = (props: Props) => {
 
   return (
     <View style={styles.container}>
+      {loading && <GenericLoader />}
       <ScrollView
         keyboardShouldPersistTaps="always"
         keyboardDismissMode="on-drag"

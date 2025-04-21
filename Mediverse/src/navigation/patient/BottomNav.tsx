@@ -8,6 +8,7 @@ import { useUser } from '../../context/user';
 import * as screens from '../../screens';
 import { rspF, rspW } from '../../theme/responsive';
 import { RootStackParamList } from '../navStrings';
+import { CalendarIc, FilledCalendarIc, FilledProfileIc, HomeFilledIc, HomeIc, LocFilledIc, LocIc, ProfileIc } from '../../svg';
 
 const TabBarIcon = ({
   color,
@@ -16,15 +17,19 @@ const TabBarIcon = ({
   icon,
   iconSet,
   image,
+  SvgImg,
+  FocusedSvg
 }: {
   color: string;
   size: number;
   focused: boolean;
   icon?: string;
-  iconSet: IconSets;
+  iconSet?: IconSets;
   image?: number;
+  SvgImg?: any;
+  FocusedSvg?: any;
+
 }) => {
-  const {theme} = useUser();
   return (
     <View
       style={[
@@ -36,22 +41,29 @@ const TabBarIcon = ({
         },
         focused && {
           borderRadius: size + 15,
-          backgroundColor: '#F2F9FF',
+          backgroundColor: '#F3F4F6',
         },
       ]}>
-      {image && (
-        <Image
-          source={image}
-          style={{
-            tintColor: color,
-            width: size,
-            height: size,
-          }}
-        />
-      )}
-      {icon && (
-        <VectorIcons iconSet={iconSet} name={icon} size={size} color={color} />
-      )}
+      <>
+        {image && (
+          <Image
+            source={image}
+            style={{
+              tintColor: color,
+              width: size,
+              height: size,
+            }}
+          />
+        )}
+        {icon && iconSet && (
+          <VectorIcons iconSet={iconSet} name={icon} size={size} color={color} />
+        )}
+        {SvgImg && (
+          focused ? <FocusedSvg /> : <SvgImg />
+        )
+        }
+      </>
+
     </View>
   );
 };
@@ -60,21 +72,21 @@ const Tab = createBottomTabNavigator();
 type Props = {
   navigation: NavigationProp<RootStackParamList, 'BOTTOMTAB'>;
 };
-const BottomNav = ({navigation}:Props) => {
+const BottomNav = ({ navigation }: Props) => {
 
   useEffect(() => {
-    console.log('BottomNav mounted',navigation.getState().routes);
+    console.log('BottomNav mounted', navigation.getState().routes);
   }, [navigation.getState().routes]);
   return (
     <Tab.Navigator
       screenOptions={{
-        animation:'none',
+        animation: 'none',
         tabBarShowLabel: false,
-        tabBarActiveTintColor:'black',
-        tabBarInactiveTintColor:'#A59D84',
+        // tabBarActiveTintColor: 'black',
+        // tabBarInactiveTintColor: '#A59D84',
         headerTitleAlign: 'center',
         headerTitleStyle: {
-          color:'black',
+          color: 'black',
           fontSize: rspF(20),
         },
         headerLeft: () => {
@@ -96,36 +108,41 @@ const BottomNav = ({navigation}:Props) => {
         },
       }}
       backBehavior="order"
-      >
+    >
       <Tab.Screen
         name="BOTTOM_HOME"
         component={screens.Home}
         options={{
-          tabBarIcon: ({color, size, focused}) => (
+          tabBarIcon: ({ color, size, focused }) => (
             <TabBarIcon
               color={color}
               size={size}
               focused={focused}
-              icon={'home'}
-              iconSet={IconSets.MaterialCommunityIcons}
+              SvgImg={HomeIc}
+              FocusedSvg={HomeFilledIc}
+            // icon={'home'}
+            // iconSet={IconSets.MaterialCommunityIcons}
             />
           ),
           headerShown: false,
         }}
       />
       <Tab.Screen
-        name="Dashboard"
-        component={screens.DashBoard}
+        name="NearbyHospitalsMap"
+        component={screens.NearbyHospitalsMap}
         options={{
-          tabBarIcon: ({color, size, focused}) => (
+          tabBarIcon: ({ color, size, focused }) => (
             <TabBarIcon
-              image={Icons.Dashboard}
               color={color}
               size={size}
               focused={focused}
-              iconSet={IconSets.FontAwesome}
+              SvgImg={LocIc}
+              FocusedSvg={LocFilledIc}
+              
+              
             />
           ),
+          headerShown: false,
         }}
       />
       <Tab.Screen
@@ -133,13 +150,15 @@ const BottomNav = ({navigation}:Props) => {
         component={screens.Search}
         options={{
           title: '',
-          tabBarIcon: ({color, size, focused}) => (
+          tabBarIcon: ({ color, size, focused }) => (
             <TabBarIcon
               color={color}
               size={size}
               focused={focused}
-              icon={'search'}
-              iconSet={IconSets.FontAwesome}
+              SvgImg={CalendarIc}
+              FocusedSvg={FilledCalendarIc}              
+            // icon={'search'}
+            // iconSet={IconSets.FontAwesome}
             />
           ),
         }}
@@ -148,13 +167,15 @@ const BottomNav = ({navigation}:Props) => {
         name="Profile"
         component={screens.ProfileScreen}
         options={{
-          tabBarIcon: ({color, size, focused}) => (
+          tabBarIcon: ({ color, size, focused }) => (
             <TabBarIcon
               color={color}
               size={size}
               focused={focused}
-              icon={'user-alt'}
-              iconSet={IconSets.FontAwesome5}
+              SvgImg={ProfileIc}
+              FocusedSvg={FilledProfileIc}
+            // icon={'user-alt'}
+            // iconSet={IconSets.FontAwesome5}
             />
           ),
           title: '',

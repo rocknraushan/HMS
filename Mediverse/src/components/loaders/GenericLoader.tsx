@@ -1,11 +1,8 @@
 import { ActivityIndicator, Modal, StyleSheet, Text, View } from 'react-native'
 import React, { memo } from 'react'
 
-type Props = {
-    isLoading: boolean;
-}
 
-const GenericLoader = (props: Props) => {
+const GenericLoader = () => {
     return (
         <Modal visible style={{ flex: 1 }} transparent statusBarTranslucent>
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.5)" }}>

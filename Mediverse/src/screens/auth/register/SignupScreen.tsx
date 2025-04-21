@@ -13,14 +13,15 @@ import * as Keychain from 'react-native-keychain';
 import ChooseRoleScreen from '../welcome/ChooseRoleScreen';
 import StyledDropdown from '../../../components/Dropdown/StyledDropdown';
 import { Formik, FormikHandlers, FormikProps } from 'formik';
+import GenericLoader from '../../../components/loaders/GenericLoader';
 
 const { height, width } = Dimensions.get('window');
-const initialValue ={
-  email:'',
-  password:'',
-  name:'',
-  role:Services.ROLE.PATIENT,
-  document:''
+const initialValue = {
+  email: '',
+  password: '',
+  name: '',
+  role: Services.ROLE.PATIENT,
+  document: ''
 }
 type Props = {
   navigation: NavigationProp<RootStackParamList, 'SIGNUP'>
@@ -28,13 +29,16 @@ type Props = {
 }
 const SignupScreen = (props: Props) => {
   const [roleChooser, setRoleChooser] = useState(true)
-   const formikRef = React.useRef<FormikProps<typeof initialValue>>(null);
-  const handleSignup = async (values:typeof initialValue) => {
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const formikRef = React.useRef<FormikProps<typeof initialValue>>(null);
+  const handleSignup = async (values: typeof initialValue) => {
     console.log('Username:', values.name, Config.BASE_URL);
     console.log('Email:', values.email);
     console.log('Password:', values.password);
 
     try {
+      setLoading(true)
       const client = await getAxiosClient();
       const deviceToken = await AsyncStorage.getItem('fcmToken');
       const response = await client.post(Services.REGISTER, {
@@ -64,10 +68,13 @@ const SignupScreen = (props: Props) => {
         Alert.alert("Error", error.response.data.message)
       }
     }
+    finally{
+      setLoading(false)
+    }
   };
 
- const handleProffesion = ()=>{
-    formikRef.current?.setFieldValue("role","doctor");
+  const handleProffesion = () => {
+    formikRef.current?.setFieldValue("role", "doctor");
     setRoleChooser(false)
   }
 
@@ -81,6 +88,7 @@ const SignupScreen = (props: Props) => {
       <Modal statusBarTranslucent visible={roleChooser} style={{ flex: 1 }}>
         <ChooseRoleScreen onProfessionalSelect={handleProffesion} done={() => setRoleChooser(false)} />
       </Modal>
+      {loading && <GenericLoader />}
       <ScrollView
         showsVerticalScrollIndicator={false}
         bounces={false}
@@ -156,15 +164,15 @@ const SignupScreen = (props: Props) => {
                   value={values.role}
                   onChangeText={handleChange('role')}
                   error={touched.role && errors.role}
-                  style={{marginBottom:16}}
+                  style={{ marginBottom: 16 }}
                 />}
-                <TouchableOpacity style={styles.button} onPress={()=>handleSubmit()}>
+                <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
                   <Text style={styles.buttonText}>Sign Up</Text>
                 </TouchableOpacity>
               </>
             )
           }}
-            </Formik>
+        </Formik>
         <TouchableOpacity onPress={() => props.navigation.navigate("LOGIN")}>
           <Text style={styles.link}>Already have an account? Login</Text>
         </TouchableOpacity>
