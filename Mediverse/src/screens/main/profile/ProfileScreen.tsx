@@ -10,6 +10,7 @@ import FastImage from 'react-native-fast-image';
 import Kechain from 'react-native-keychain';
 import LogoutBottomSheet from './components/LogoutBottomSheet';
 import ProfilePicUploader from '../../profile/components/ProfilePicUploader';
+import StorageProvider from '../../../storage/Storage';
 
 interface Props {
   navigation: NavigationProp<RootStackParamList, "PROFILE_HOME">;
@@ -35,9 +36,10 @@ const ProfileScreen = ({ navigation }: Props) => {
   const logout = () => {
     // Handle logout logic here
     Kechain.resetGenericPassword()
-      .then(() => {
+      .then(async() => {
         console.log('Credentials reset successfully!');
-        // Navigate to login screen or perform any other action
+
+        await StorageProvider.clearStorage();
         InteractionManager.runAfterInteractions(() => {
           navigation.dispatch(CommonActions.reset({
             index: 0,
@@ -61,7 +63,7 @@ const ProfileScreen = ({ navigation }: Props) => {
 
         {/* <TouchableOpacity style={styles.avatarContainer}>
           <FastImage
-            source={profileData?.profilePic ? { uri: profileData?.profilePic } : profileData?.socialData?.photo ? {uri:profileData?.socialData?.photo}: Icons.userIcon} // replace with your image
+            source={(typeof profileData?.profilePic) == 'string' ? { uri: profileData?.profilePic } : profileData?.socialData?.photo ? {uri:profileData?.socialData?.photo}: Icons.userIcon} // replace with your image
             style={styles.avatar}
           />
           <Pressable style={styles.editIconContainer}>

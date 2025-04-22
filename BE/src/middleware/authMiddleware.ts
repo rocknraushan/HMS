@@ -20,10 +20,6 @@ export const authMiddleware = (req: CustomRequest, res: Response, next: NextFunc
   try {
     // Decode the token (only fetch id and role from it)
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "") as JwtPayload;
-    console.log("decoded token------>", decoded);
-    // Assuming the user object is retrieved from the DB using the ID
-    // For simplicity, let's add just the JWT fields (id and role) to the request user here
-    // You might want to retrieve the full user from the DB in a real scenario
     req.user = {
       _id: decoded.id,  // Assuming the decoded `id` maps to the user's _id
       name: "",  // You might want to query the DB to populate these fields

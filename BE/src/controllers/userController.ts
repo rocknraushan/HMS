@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/User";
+import Doctor, { IDoctor } from "../models/doctor";
+import Nurse, { INurse } from "../models/Nurse";
+import EMT, { IEMT } from "../models/Emt";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import DeviceToken from "../models/devices";
@@ -8,16 +11,15 @@ import * as admin from "firebase-admin";
 import streamifier from 'streamifier';
 import cloudinary from "../config/cludinary";
 import otpGenerator from 'otp-generator'
-import bcrypt from "bcryptjs";
+import Patient from "../models/patients";
 
-const FRONTEND_APP_URL ="http://www.evaidhya.site/";
+const FRONTEND_APP_URL = "http://www.evaidhya.site/";
 
 export async function createUser(req: Request, res: Response): Promise<any> {
-  // TODO: add validation to validate the socail data and email  using google client
-
   const { name, email, password, role, deviceToken, plateform } = req.body;
 
   try {
+    // Check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({
@@ -25,18 +27,76 @@ export async function createUser(req: Request, res: Response): Promise<any> {
         email: "Email already registered",
       });
 
-    const allowedRoles = ["doctor", "nurse", "admin", "patient"];
+    // Check if the role is valid
+    const allowedRoles = ["doctor", "nurse", "patient", "emt"];
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({ message: "Invalid role" });
     }
 
-    const user = await User.create({ name, email, password, role });
+    // Create the User document
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role,
+    });
+
+    // Role-specific model creation
+    switch (role) {
+      case "patient":
+        await Patient.create({
+          user: user._id,
+          name: user.name,
+          age: 0,
+          gender: "",
+          contact: "",
+          address: "",
+          medicalHistory: [],
+          prescriptions: [],
+          documents: [],
+        });
+        break;
+
+      case "doctor":
+        await Doctor.create({
+          user: user._id,
+          isAvailable: true,
+          specialization: "",
+        });
+        break;
+
+      case "nurse":
+        await Nurse.create({
+          user: user._id,
+          isAvailable: true,
+        });
+        break;
+
+      case "emt":
+        await EMT.create({
+          user: user._id,
+          isAvailable: true,
+        });
+        break;
+
+      case "admin":
+        // Admin can be created without extra fields
+        break;
+
+      default:
+        return res.status(400).json({ message: "Invalid role" });
+    }
+
+
+    // Handle device token if provided (for push notifications)
     if (deviceToken) {
       const device = await DeviceToken.create({
         plateform: plateform,
         token: deviceToken,
         user: user._id,
       });
+
+      // Send a welcome notification
       await admin
         .messaging()
         .send({
@@ -53,18 +113,25 @@ export async function createUser(req: Request, res: Response): Promise<any> {
           console.error("Error sending message:", error);
         });
     }
+
+    // Save user data
     await user.save();
+
+    // Generate JWT token for the user
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET || "",
-      {
-        expiresIn: "7d",
-      }
+      { expiresIn: "7d" }
     );
 
-    res.status(201).json({ token: token, firstLogin: user.firstLogin,role: user.role });
+    // Respond with the token and user details
+    res.status(201).json({
+      token: token,
+      firstLogin: user.firstLogin,
+      role: user.role,
+    });
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error" + String(err) });
   }
 }
 
@@ -101,7 +168,7 @@ export async function userLogin(req: Request, res: Response): Promise<any> {
             process.env.JWT_SECRET || "",
             { expiresIn: "7d" }
           );
-          return  res.status(201).json({ token: token, firstLogin: user.firstLogin,role: user.role });
+          return res.status(201).json({ token: token, firstLogin: user.firstLogin, role: user.role });
         } else {
           if (
             socialUser.socialData &&
@@ -147,7 +214,7 @@ export async function userLogin(req: Request, res: Response): Promise<any> {
           }
         );
 
-        res.status(201).json({ token: token, firstLogin: user.firstLogin,role: user.role });
+        res.status(201).json({ token: token, firstLogin: user.firstLogin, role: user.role });
     }
   } catch (err) {
     console.error("Login error:", err);
@@ -266,29 +333,27 @@ export async function verifyOtpAndResetPassword(req: Request, res: Response): Pr
   }
 }
 
-
 export async function updateProfile(req: Request, res: Response): Promise<any> {
-  const { name, email, phone, dob, gender, bloodGroup } = req.body;
   const profilePic = req.file;
-
-  //@ts-ignore
+  // @ts-ignore
   const user = req.user;
+
   if (!user) {
     return res.status(404).json({ message: 'User not found' });
   }
 
   try {
-    let updatedData: Partial<IUser> = {
-      name: name || user.name,
-      email: email || user.email,
-      phone: phone || user.phone,
-      dob: dob || user.dob,
-      gender: gender || user.gender,
-      bloodGroup: bloodGroup || user.bloodGroup,
-      firstLogin: false,
-    };
+    const baseFields :(keyof IUser)[] = ['name', 'email', 'phone', 'gender',"firstName","lastName"];
+    const updatedData: Partial<IUser> = { firstLogin: false };
 
-    // If a profile picture is provided, upload to Cloudinary
+    // Base profile fields update
+    for (const field of baseFields) {
+      if (req.body[field]) {
+        updatedData[field] = req.body[field];
+      }
+    }
+
+    // Upload profile picture if provided
     if (profilePic) {
       const streamUpload = (buffer: Buffer) => {
         return new Promise<{ secure_url: string }>((resolve, reject) => {
@@ -308,15 +373,84 @@ export async function updateProfile(req: Request, res: Response): Promise<any> {
 
       const result = await streamUpload(profilePic.buffer);
       updatedData.profilePic = result.secure_url;
+      console.log(updateProfile, "pic upload result")
     }
 
+    // Update main user model
     const updatedUser = await User.findByIdAndUpdate(user._id, updatedData, {
       new: true,
       runValidators: true,
     });
 
     if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found after update' });
+    }
+
+    // Role-specific updates
+    switch (user.role) {
+      case 'patient':
+        await Patient.findOneAndUpdate(
+          { user: user._id },
+          {
+            name: req.body.name,
+            age: req.body.age,
+            gender: req.body.gender,
+            contact: req.body.contact,
+            address: req.body.address,
+            medicalHistory: req.body.medicalHistory,
+            prescriptions: req.body.prescriptions,
+            documents: req.body.documents,
+          },
+          { upsert: true, new: true }
+        );
+        break;
+
+      case 'doctor':
+        await Doctor.findOneAndUpdate(
+          { user: user._id },
+          {
+            specialization: req.body.specialization,
+            workingHours: req.body.workingHours,
+            clinicAddress: req.body.clinicAddress,
+            isAvailable: req.body.isAvailable,
+            bio: req.body.bio,
+            experience: req.body.experience
+          },
+          { upsert: true, new: true }
+        );
+        break;
+
+      case 'nurse':
+        await Nurse.findOneAndUpdate(
+          { user: user._id },
+          {
+            specialization: req.body.specialization,
+            experience: req.body.experience,
+            bio: req.body.bio,
+            licenseNumber: req.body.licenseNumber,
+            education: req.body.education
+          },
+          { upsert: true, new: true }
+        );
+        break;
+
+      case 'emt':
+        await EMT.findOneAndUpdate(
+          { user: user._id },
+          {
+            isAvailable: req.body.isAvailable,
+            vehicleType: req.body.vehicleType,
+            vehicleNumber: req.body.vehicleNumber,
+            driverName: req.body.driverName,
+            driverContact: req.body.driverContact,
+            assignedHospital: req.body.assignedHospital,
+          },
+          { upsert: true, new: true }
+        );
+        break;
+
+      default:
+        console.warn(`No role-specific model handler for role: ${user.role}`);
     }
 
     res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
@@ -329,17 +463,52 @@ export async function updateProfile(req: Request, res: Response): Promise<any> {
 
 export async function getProfile(req: Request, res: Response): Promise<any> {
   try {
-    //@ts-ignore
+    // @ts-ignore
     const userId = req.user?._id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const user = await User.findById(userId).select(
-      "-password -resetPasswordToken -resetPasswordExpiry"
-    );
+    const user = await User.findById(userId)
+      .select("name email role phone profilePic firstLogin");
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.status(200).json({ profile: user });
+    let roleData: Record<string, any> = {};
+
+    switch (user.role) {
+      case 'patient': {
+        const patient = await Patient.findOne({ userId }).select("height weight allergies address medicalHistory prescriptions documents");
+        if (patient) roleData = patient.toObject();
+        break;
+      }
+      case 'doctor': {
+        const doctor = await Doctor.findOne({ userId }).select("specialization isAvailable experience licenseNumber verified bio workingHours clinicAddress rating verified education");
+        if (doctor) roleData = doctor.toObject();
+        break;
+      }
+      case 'nurse': {
+        const nurse = await Nurse.findOne({ userId }).select("isAvailable specialization experience verified bio education licenseNumber rating");
+        if (nurse) roleData = nurse.toObject();
+        break;
+      }
+      case 'emt': {
+        const emt = await EMT.findOne({ userId }).select("isAvailable location ambulanceNumber");
+        if (emt) roleData = emt.toObject();
+        break;
+      }
+    }
+
+    res.status(200).json({
+      profile: {
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        gender: user.gender,
+        profilePic: user.profilePic,
+        role: user.role,
+        firstLogin: user.firstLogin,
+        ...roleData,
+      }
+    });
   } catch (error) {
     console.error("Error fetching profile:", error);
     res.status(500).json({ message: "Server error", error });

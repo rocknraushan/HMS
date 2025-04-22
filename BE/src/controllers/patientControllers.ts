@@ -11,10 +11,10 @@ export const getPatients = async (req: Request, res: Response): Promise<void> =>
 };
 
 export const addPatient = async (req: Request, res: Response): Promise<void> => {
-    const { name, age, gender, contact, address }: IPatient = req.body;
+    const { name, age, gender, address }: IPatient = req.body;
 
     try {
-        const newPatient = new Patient({ name, age, gender, contact, address });
+        const newPatient = new Patient({ name, age, gender, address });
         const savedPatient = await newPatient.save();
         res.status(201).json(savedPatient);
     } catch (error) {

@@ -1,47 +1,66 @@
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcryptjs";
 
+export interface ILocation {
+  type: "Point";
+  coordinates: [number, number];
+}
+
 export interface IUser extends Document {
   firstName: string;
   lastName: string;
   name: string;
   email: string;
   password: string;
-  role: "doctor" | "nurse" | "admin" | "patient";
+  role: "doctor" | "nurse" | "admin" | "patient" | "emt";
   matchPassword(enteredPassword: string): Promise<boolean>;
   resetPasswordToken: string | null;
   resetPasswordExpiry: number | null;
-  profilePic: string;
-  socialData: any;
-  dob: string;
-  bloodGroup: string;
-  gender: string;
-  phone: string;
+  profilePic?: string | Buffer;
+  socialData?: any;
+  gender?: string;
+  phone?: string;
   firstLogin: boolean;
+  location?: ILocation;
 }
 
-const userSchema: Schema<IUser> = new Schema({
-  firstName: { type: String, required: false },
-  lastName: { type: String, required: false },
-  name: { type: String, required: false },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  profilePic: { type: String, required: false, data : Buffer },
-  socialData: { type: Object, required: false },
-  dob: { type: String, required: false },
-  bloodGroup: { type: String, required: false },
-  gender: { type: String, required: false },
-  phone: { type: String, required: false },
-  firstLogin: { type: Boolean, default: true },
-  resetPasswordExpiry: { type: Number, default: null },
-  resetPasswordToken: { type: String, default: null },
-  role: {
-    type: String,
-    enum: ["doctor", "nurse", "admin", "patient"],
-    default: "patient",
-    required: true,
+const userSchema: Schema<IUser> = new Schema(
+  {
+    firstName: { type: String },
+    lastName: { type: String },
+    name: { type: String },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    profilePic: { type: Buffer }, // assuming image buffer; switch to String if URL
+    socialData: { type: Object },
+    gender: { type: String },
+    phone: { type: String },
+    firstLogin: { type: Boolean, default: true },
+    resetPasswordExpiry: { type: Number, default: null },
+    resetPasswordToken: { type: String, default: null },
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point"
+      },
+      coordinates: {
+        type: [Number],
+        default: [0, 0]
+      }
+    },
+    role: {
+      type: String,
+      enum: ["doctor", "nurse", "admin", "patient", "emt"],
+      default: "patient",
+      required: true
+    }
   },
-});
+  { timestamps: true }
+);
+
+// Create geospatial index
+userSchema.index({ location: "2dsphere" });
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
@@ -51,7 +70,7 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// Compare password
+// Compare password method
 userSchema.methods.matchPassword = async function (
   enteredPassword: string
 ): Promise<boolean> {

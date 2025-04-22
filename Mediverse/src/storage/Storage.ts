@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const Storage = {
+const StorageProvider = {
     async getToken(): Promise<string> {
         try {
             const token = await AsyncStorage.getItem("TOKEN");
@@ -32,6 +32,13 @@ const Storage = {
             return null;
         }
     },
+    async clearStorage(): Promise<void> {
+        try {
+            await AsyncStorage.clear();
+        } catch (error) {
+            console.error("Error clearing storage:", error);
+        }
+    }
 };
 
-export default Storage;
+export default StorageProvider;

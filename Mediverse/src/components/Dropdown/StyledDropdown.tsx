@@ -7,7 +7,7 @@ import { ThemeContext } from '../../../App';
 
 export interface DropdownType {
   label: string;
-  value: string;
+  value: any;
   image?: string;
 }
 

@@ -10,14 +10,3 @@ export const getDoctors = async (req: Request, res: Response): Promise<void> => 
     }
 };
 
-export const addDoctor = async (req: Request, res: Response): Promise<void> => {
-    const { name, specialization, contact, email, workingHours }: IDoctor = req.body;
-
-    try {
-        const newDoctor = new Doctor({ name, specialization, contact, email, workingHours });
-        const savedDoctor = await newDoctor.save();
-        res.status(201).json(savedDoctor);
-    } catch (error) {
-        res.status(500).json({ message: (error as Error).message });
-    }
-};

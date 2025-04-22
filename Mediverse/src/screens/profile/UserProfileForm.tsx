@@ -25,23 +25,18 @@ import getAxiosClient from '../../HttpService/AxiosClient';
 import {Services} from '../../HttpService';
 import { callProfileUpdateApi, fetchProfile, profileValidation } from './ProfileFunctions';
 import SuccessModal from '../../components/loaders/SuccessModal';
+import PatientForm from './components/PatientForm';
+import DoctorForm from './components/DoctorForm';
+import { getInitialValues } from './components/ProfileVal';
 
 type Props = {
   navigation: NavigationProp<RootStackParamList, 'UserProfileForm'>;
 };
-const initialValues = {
-  name: '',
-  age: '',
-  bloodGroup: '',
-  phone: '',
-  profilePic: {uri: '', type: '', name: ''},
-  gender: '',
-  email: '',
-  dob: '',
-};
+
 const UserProfileForm = (props: Props) => {
-  const [initVal, setInitVal] = useState(initialValues)
-  const formikRef = React.useRef<FormikProps<typeof initialValues>>(null);
+  const [initVal, setInitVal] = useState(getInitialValues())
+  const [profiledata, setProfiledata] = useState<any>(null);
+  const formikRef = React.useRef<FormikProps<any>>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false)
   const [verificationError, setVerificationError] = useState<string | null>(
@@ -54,8 +49,8 @@ const UserProfileForm = (props: Props) => {
     props.navigation.goBack();
   };
   const updateProfile = async (
-    values: typeof initialValues,
-    formikHelpers: FormikHelpers<typeof initialValues>
+    values: any,
+    formikHelpers: FormikHelpers<any>
   ) => {
     try {
       console.log('Form values:', values);
@@ -68,8 +63,8 @@ const UserProfileForm = (props: Props) => {
             type: values.profilePic.type || 'image/jpeg',
             name: values.profilePic.name || 'profile.jpg',
           });
-        } else if (values[key as keyof typeof initialValues] !== undefined) {
-          formData.append(key, String(values[key as keyof typeof initialValues]));
+        } else if (values[key as keyof typeof initVal] !== undefined) {
+          formData.append(key, String(values[key as keyof typeof initVal]));
         }
       });
       await callProfileUpdateApi(formData,props.navigation)
@@ -105,20 +100,25 @@ const UserProfileForm = (props: Props) => {
   async function getProfileData() {
     try {
       const data = await fetchProfile();
+      console.log(data,"profile:::::")
       if(data.profile){
         const {profile} = data
+        setProfiledata(profile)
         console.log(profile,"data prof")
         const initValues = {
           name: profile.name || "",
           age: profile.age || '',
           bloodGroup: profile.bloodGroup ||'',
           phone:profile.phone || '',
-          profilePic: {uri: profile.profilePic || '', type: '', name: ''},
+          // profilePic: {uri: profile.profilePic || '', type: '', name: ''},
           gender: profile.gender||'',
           email: profile.email ||'',
           dob:profile.dob || '',
         };
-        setInitVal(initValues)
+        setInitVal({
+          ...initVal,
+          ...initValues,
+        });
       }
     } catch (error) {
       
@@ -139,6 +139,7 @@ const UserProfileForm = (props: Props) => {
   useEffect(()=>{
     getProfileData();
   },[])
+
   return (
     <View style={styles.flex}>
       <SuccessModal title='Congratulations!' subTitle='Your account is ready to use. You will be redirected to the Home Page in a few seconds...' duration={5000} visible={showSuccess} onClose={()=>setShowSuccess(false)}/>
@@ -189,7 +190,7 @@ const UserProfileForm = (props: Props) => {
               <>
                 <ProfilePicUploader
                   onSelect={(e)=>setFieldValue('profilePic',e)}
-                  image={values.profilePic.uri}
+                  image={values.profilePic?.uri || ""}
                 />
                 <CustomInput
                   placeholder="Full Name"
@@ -285,26 +286,16 @@ const UserProfileForm = (props: Props) => {
                     containerStyle={styles.fieldMargin}
                   />
                 </Pressable>
-                <CustomInput
-                  placeholder="Age"
-                  value={values.age}
-                  onChangeText={handleChange('age')}
-                  error={touched.age && errors.age}
-                  extra={{
-                    keyboardType: 'numeric',
-                    inputMode: 'numeric',
-                    editable: false,
-                  }}
-                  leftIcon={
-                    <VectorIcons
-                      name="cake"
-                      size={20}
-                      color="#9CA3AF"
-                      iconSet={IconSets.MaterialIcons}
-                    />
-                  }
-                  containerStyle={styles.fieldMargin}
-                />
+                {
+                  profiledata && profiledata.role ==="patient" && (
+                    <PatientForm formikRef={formikRef?.current} />
+                  )
+                }
+                {
+                  profiledata && profiledata.role ==="doctor" && (
+                    <DoctorForm formikRef={formikRef?.current} />
+                  )
+                }
                 <PromiseButton
                   onPress={handleSubmit}
                   text="Login"

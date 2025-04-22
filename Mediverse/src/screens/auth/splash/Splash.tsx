@@ -12,6 +12,7 @@ import Keychain from 'react-native-keychain';
 import { NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../../navigation/navStrings';
 import { Services } from '../../../HttpService';
+import { fetchProfile } from '../../profile/ProfileFunctions';
 interface Props {
   navigation: NavigationProp<RootStackParamList,"SPLASH">;
 }
@@ -22,7 +23,7 @@ const Splash = ({ navigation }: Props) => {
     const checkLoginState = async () => {
       try {
          const user = await Keychain.getGenericPassword();
-              
+          await fetchProfile();
         const isLoggedIn = user
 
         if (isLoggedIn) {
