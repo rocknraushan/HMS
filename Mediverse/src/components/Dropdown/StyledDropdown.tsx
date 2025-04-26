@@ -23,6 +23,9 @@ interface DropdownProps {
   renderItem?: (item: DropdownType[]) => void;
   search?: boolean;
   style?: StyleProp<ViewStyle>;
+  leftIcon?: React.ReactNode;
+  multiple?: boolean;
+  selected?: DropdownType[];
 }
 
 const StyledDropdown = ({
@@ -35,6 +38,7 @@ const StyledDropdown = ({
   disabled,
   search,
   style,
+  leftIcon,
 }: DropdownProps) => {
   const {theme} = useContext(ThemeContext);
   const styles = styleSheet(theme);
@@ -48,8 +52,12 @@ const StyledDropdown = ({
   }, []);
 
   return (
-    <View style={style}>
+    <View style={[styles.listWrapper,style]}>
+      {leftIcon && (
+        leftIcon
+      )}
       <Dropdown
+
         data={data}
         placeholder={placeholder}
         labelField="label"
@@ -99,15 +107,24 @@ const StyledDropdown = ({
 };
 const styleSheet = (theme: Theme) =>
   StyleSheet.create({
-    dropdown: {
-      paddingHorizontal: rspW(12),
-      height: 50,
+  listWrapper: {
+    flexDirection:"row",
+    width:'100%',
+    alignContent:'center',
     borderColor: '#9CA3AF',
     borderWidth: 1,
     borderRadius: 10,
+    justifyContent:"flex-start",
+    overflow:"hidden",
+    paddingStart:10,
+    backgroundColor: theme.white,
+  },
+    dropdown: {
+      paddingHorizontal: rspW(12),
+      height: 50,
     paddingLeft: 15,
     backgroundColor: '#fff',
-    width: '100%',
+    flex:1
     },
     error: {
       borderColor: "#9CA3AF",

@@ -48,15 +48,18 @@ const LoginScreen = (props: Props) => {
   const handleLogin = async () => {
     try {
       setLoading(true)
+      const deviceToken = await AsyncStorage.getItem('fcmToken');
       const response = await CallLoginApi({
         email: formikRef.current?.values.email,
         password: formikRef.current?.values.password,
         loginType: 'email',
-        plateform: Platform.OS
+        plateform: Platform.OS,
+        deviceToken,
       });
 
       console.log("response ===>", response)
       if (response) {
+        setLoading(false)
         if (response.firstLogin) {
           props.navigation.navigate('UserProfileForm');
         } else
@@ -68,6 +71,7 @@ const LoginScreen = (props: Props) => {
 
       }
     } catch (error: any) {
+      setLoading(false)
       console.error('Registration error:', error.response.data);
       if (error.response.data)
         formikRef.current?.setErrors(error.response.data);
@@ -83,13 +87,15 @@ const LoginScreen = (props: Props) => {
     console.log(idToken, accessToken, user, 'google response');
     if (user.id) {
       try {
-        setLoading(true)
+        setLoading(true);
+      const deviceToken = await AsyncStorage.getItem('fcmToken');
         const response = await CallLoginApi({
           email: user.email,
           password: '',
           loginType: 'google',
           plateform: Platform.OS,
           socialData: user,
+          deviceToken
         });
         console.log(response, 'Registration response');
         if (response.token) {

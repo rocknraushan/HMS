@@ -37,7 +37,7 @@ interface IDeviceToken extends Document {
 // Create the DeviceToken schema
 const deviceTokenSchema = new Schema<IDeviceToken>({
     plateform: { type: String, enum: ["android", "ios"], required: true },
-    token: { type: String, required: true },
+    token: { type: String, required: true,unique: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: false }

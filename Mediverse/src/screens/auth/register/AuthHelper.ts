@@ -42,6 +42,7 @@ export interface LoginData {
     loginType: "google" | "email";
     plateform: string;
     socialData?:any;
+    deviceToken?: string | null;
 }
 export async function CallLoginApi(data: LoginData): Promise<any> {
     return new Promise<void>(async (resolve, reject) => {

@@ -9,6 +9,7 @@ import * as screens from '../../screens';
 import { rspF, rspW } from '../../theme/responsive';
 import { RootStackParamList } from '../navStrings';
 import { CalendarIc, FilledCalendarIc, FilledProfileIc, HomeFilledIc, HomeIc, LocFilledIc, LocIc, ProfileIc } from '../../svg';
+import { fetchProfile } from '../../screens/profile/ProfileFunctions';
 
 const TabBarIcon = ({
   color,
@@ -74,9 +75,19 @@ type Props = {
 };
 const BottomNav = ({ navigation }: Props) => {
 
+  const  isFocused  = navigation.isFocused();
+
+  async function getUserProfile() {
+    try {
+      const userData = await fetchProfile();
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+    }
+  }
+
   useEffect(() => {
-    console.log('BottomNav mounted', navigation.getState().routes);
-  }, [navigation.getState().routes]);
+    getUserProfile()
+  }, [isFocused]);
   return (
     <Tab.Navigator
       screenOptions={{

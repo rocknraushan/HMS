@@ -24,6 +24,7 @@ export const UserVal =  {
     export const patientVal = {
         ...UserVal,
         age: '',
+        dob:'',
         bloodGroup: '',
         medicalHistory: [],
         prescriptions: [],

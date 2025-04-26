@@ -23,7 +23,6 @@ const Splash = ({ navigation }: Props) => {
     const checkLoginState = async () => {
       try {
          const user = await Keychain.getGenericPassword();
-          await fetchProfile();
         const isLoggedIn = user
 
         if (isLoggedIn) {

@@ -125,17 +125,6 @@ const UserProfileForm = (props: Props) => {
     }
   }
 
-  const handleDobChange = (event:any, selectedDate:any) => {
-    const currentDate = selectedDate || new Date();
-    setShowDatePicker(false);
-    formikRef.current?.setFieldValue(
-      'dob',
-      currentDate.toLocaleDateString(),
-    );
-    const age = new Date().getFullYear() - currentDate.getFullYear();
-    formikRef.current?.setFieldValue('age', String(age));
-  }
-
   useEffect(()=>{
     getProfileData();
   },[])
@@ -172,7 +161,7 @@ const UserProfileForm = (props: Props) => {
           keyboardShouldPersistTaps="handled"
           style={styles.scrollContainer}>
           <Formik
-            initialValues={initVal}
+            initialValues={getInitialValues()}
             innerRef={formikRef}
             validationSchema={profileValidation}
             enableReinitialize
@@ -221,19 +210,6 @@ const UserProfileForm = (props: Props) => {
                 />
                 <StyledDropdown
                   data={[
-                    {label: 'A+', value: 'A+'},
-                    {label: 'B+', value: 'B+'},
-                    {label: 'O+', value: 'O+'},
-                    {label: 'AB+', value: 'AB+'},
-                  ]}
-                  placeholder="Blood Group"
-                  value={values.bloodGroup}
-                  onChangeText={handleChange('bloodGroup')}
-                  error={touched.bloodGroup && errors.bloodGroup}
-                  style={styles.fieldMargin}
-                />
-                <StyledDropdown
-                  data={[
                     {label: 'Male', value: 'male'},
                     {label: 'Female', value: 'female'},
                     {label: 'Other', value: 'other'},
@@ -264,28 +240,7 @@ const UserProfileForm = (props: Props) => {
                   }
                   containerStyle={styles.fieldMargin}
                 />
-                <Pressable onPress={() => setShowDatePicker(true)}>
-                  <CustomInput
-                    placeholder="Date of Birth"
-                    value={values.dob}
-                    onChangeText={handleChange('dob')}
-                    error={touched.dob && errors.dob}
-                    extra={{
-                      keyboardType: 'numeric',
-                      inputMode: 'numeric',
-                      editable: false,
-                    }}
-                    leftIcon={
-                      <VectorIcons
-                        name="calendar"
-                        size={20}
-                        color="#9CA3AF"
-                        iconSet={IconSets.MaterialCommunityIcons}
-                      />
-                    }
-                    containerStyle={styles.fieldMargin}
-                  />
-                </Pressable>
+                
                 {
                   profiledata && profiledata.role ==="patient" && (
                     <PatientForm formikRef={formikRef?.current} />
@@ -306,23 +261,6 @@ const UserProfileForm = (props: Props) => {
             )}
           </Formik>
         </ScrollView>
-        {showDatePicker && (
-          <RNDateTimePicker
-            testID="dateTimePicker"
-            value={new Date()}
-            mode="date"
-            is24Hour={true}
-            // minimumDate={new Date()}
-            maximumDate={
-              new Date(new Date().setFullYear(new Date().getFullYear() - 18))
-            }
-            onTouchCancel={() => setShowDatePicker(false)}
-            onTouchEnd={() => setShowDatePicker(false)}
-            themeVariant="light"
-            display="default"
-            onChange={handleDobChange}
-          />
-        )}
       </KeyboardAvoidingView>
     </View>
   );

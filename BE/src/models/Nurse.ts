@@ -10,6 +10,8 @@ export interface INurse extends Document {
   education?: string;
   licenseNumber?: string;
   rating?: number;
+  homeVisit?: boolean; // Whether the nurse offers home visits
+  clinicAddress?: string;
 }
 
 const nurseSchema: Schema<INurse> = new Schema(
@@ -20,7 +22,10 @@ const nurseSchema: Schema<INurse> = new Schema(
       required: true,
       unique: true
     },
-    specialization: { type: String },
+    clinicAddress: { type: String, required: false },
+    homeVisit: { type: Boolean, default: false },
+    specialization: { type: String, required: false },
+    verified: { type: Boolean, default: false },
     isAvailable: { type: Boolean, default: true },
     experience: { type: String },
     rating: {

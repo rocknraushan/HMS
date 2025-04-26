@@ -11,7 +11,8 @@ import * as admin from "firebase-admin";
 import streamifier from 'streamifier';
 import cloudinary from "../config/cludinary";
 import otpGenerator from 'otp-generator'
-import Patient from "../models/patients";
+import Patient from "../models/Patients";
+import { AuthRequest } from "index";
 
 const FRONTEND_APP_URL = "http://www.evaidhya.site/";
 
@@ -90,11 +91,20 @@ export async function createUser(req: Request, res: Response): Promise<any> {
 
     // Handle device token if provided (for push notifications)
     if (deviceToken) {
-      const device = await DeviceToken.create({
-        plateform: plateform,
-        token: deviceToken,
-        user: user._id,
-      });
+      const device = await DeviceToken.findOneAndUpdate(
+        { token: deviceToken },
+        {
+          plateform: plateform,
+          token: deviceToken,
+          user: user._id
+        },
+        {
+          new: true,       // return the updated document
+          upsert: true,    // create if not exists
+          setDefaultsOnInsert: true
+        }
+      );
+    
 
       // Send a welcome notification
       await admin
@@ -157,11 +167,21 @@ export async function userLogin(req: Request, res: Response): Promise<any> {
             password: dummyPassword,
             role: "patient",
           });
-          await DeviceToken.create({
-            plateform: plateform,
-            token: deviceToken,
-            user: user._id,
-          });
+          if (deviceToken) {
+            const device = await DeviceToken.findOneAndUpdate(
+              { token: deviceToken },
+              {
+                plateform: plateform,
+                token: deviceToken,
+                user: user._id
+              },
+              {
+                new: true,       // return the updated document
+                upsert: true,    // create if not exists
+                setDefaultsOnInsert: true
+              }
+            );
+          }
 
           const token = jwt.sign(
             { id: user._id, role: user.role },
@@ -185,11 +205,21 @@ export async function userLogin(req: Request, res: Response): Promise<any> {
               expiresIn: "7d",
             }
           );
-          await DeviceToken.create({
-            plateform: plateform,
-            token: deviceToken,
-            user: socialUser._id,
-          });
+          if (deviceToken) {
+            const device = await DeviceToken.findOneAndUpdate(
+              { token: deviceToken },
+              {
+                plateform: plateform,
+                token: deviceToken,
+                user: socialUser._id
+              },
+              {
+                new: true,       // return the updated document
+                upsert: true,    // create if not exists
+                setDefaultsOnInsert: true
+              }
+            );
+          }
           return res
             .status(200)
             .json({ token: token, firstLogin: socialUser.firstLogin });
@@ -333,9 +363,8 @@ export async function verifyOtpAndResetPassword(req: Request, res: Response): Pr
   }
 }
 
-export async function updateProfile(req: Request, res: Response): Promise<any> {
+export async function updateProfile(req: AuthRequest, res: Response): Promise<any> {
   const profilePic = req.file;
-  // @ts-ignore
   const user = req.user;
 
   if (!user) {
@@ -461,7 +490,7 @@ export async function updateProfile(req: Request, res: Response): Promise<any> {
 }
 
 
-export async function getProfile(req: Request, res: Response): Promise<any> {
+export async function getProfile(req: AuthRequest, res: Response): Promise<any> {
   try {
     // @ts-ignore
     const userId = req.user?._id;

@@ -9,6 +9,34 @@ import CustomInput from '../../../components/CustomInput/CustomInput';
 type Props = {
   formikRef: FormikProps<any> | null;
 };
+const doctorSpecializations = [
+  { label: "General Physician", value: "general_physician" },
+  { label: "Cardiologist", value: "cardiologist" },
+  { label: "Dermatologist", value: "dermatologist" },
+  { label: "Neurologist", value: "neurologist" },
+  { label: "Pediatrician", value: "pediatrician" },
+  { label: "Orthopedic Surgeon", value: "orthopedic_surgeon" },
+  { label: "Gynecologist", value: "gynecologist" },
+  { label: "Ophthalmologist", value: "ophthalmologist" },
+  { label: "Psychiatrist", value: "psychiatrist" },
+  { label: "ENT Specialist", value: "ent_specialist" },
+  { label: "Dentist", value: "dentist" },
+  { label: "Urologist", value: "urologist" },
+  { label: "Oncologist", value: "oncologist" },
+  { label: "Nephrologist", value: "nephrologist" },
+  { label: "Endocrinologist", value: "endocrinologist" },
+  { label: "Gastroenterologist", value: "gastroenterologist" },
+  { label: "Pulmonologist", value: "pulmonologist" },
+  { label: "Rheumatologist", value: "rheumatologist" },
+  { label: "Allergist/Immunologist", value: "allergist_immunologist" },
+  { label: "Plastic Surgeon", value: "plastic_surgeon" },
+  { label: "Anesthesiologist", value: "anesthesiologist" },
+  { label: "Hematologist", value: "hematologist" },
+  { label: "Infectious Disease Specialist", value: "infectious_disease_specialist" },
+  { label: "Geriatrician", value: "geriatrician" },
+  { label: "Sports Medicine Specialist", value: "sports_medicine_specialist" }
+];
+
 
 const DoctorForm: React.FC<Props> = ({ formikRef }) => {
   const {
@@ -45,19 +73,23 @@ const DoctorForm: React.FC<Props> = ({ formikRef }) => {
 
   return (
     <View>
-      <CustomInput
-        placeholder="Specialization"
-        value={values.specialization}
-        onChangeText={handleChange('specialization')}
-        error={touched.specialization && errors.specialization}
-        containerStyle={styles.fieldMargin}
+      <StyledDropdown
+        data={doctorSpecializations}
+        placeholder="Blood Group"
+        value={values.bloodGroup}
+        onChangeText={handleChange('bloodGroup')}
+        error={touched.bloodGroup && errors.bloodGroup}
+        style={styles.fieldMargin}
+        
         leftIcon={
-          <VectorIcons
-            name="medical-services"
-            size={20}
-            color="#9CA3AF"
-            iconSet={IconSets.MaterialIcons}
-          />
+          <View style={{ alignItems: 'center', justifyContent: 'center', backgroundColor: "#FFF" }}>
+            <VectorIcons
+              name="medical-services"
+              size={20}
+              color="#9CA3AF"
+              iconSet={IconSets.MaterialIcons}
+            />
+          </View>
         }
       />
 

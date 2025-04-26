@@ -13,6 +13,7 @@ export interface IDoctor extends Document {
   education?: string; // Medical education details
   verified?: boolean; // Whether the doctor is verified by the platform
   rating?: number; // Rating out of 5
+  homeVisit?: boolean; // Whether the doctor offers home visits
 }
 
 const doctorSchema: Schema<IDoctor> = new Schema(
@@ -32,6 +33,7 @@ const doctorSchema: Schema<IDoctor> = new Schema(
     licenseNumber: { type: String },
     education: { type: String },
     verified: { type: Boolean, default: false },
+    homeVisit: { type: Boolean, default: false },
     rating: {
       type: Number,
       default: 0,

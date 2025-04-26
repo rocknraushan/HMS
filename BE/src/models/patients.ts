@@ -20,6 +20,7 @@ export interface IDocument {
 }
 
 export interface IPatient extends Document {
+  user: mongoose.Types.ObjectId | string;
   name: string;
   age: number;
   gender: string;
@@ -54,10 +55,11 @@ const documentSchema: Schema = new Schema({
 
 const patientSchema: Schema<IPatient> = new Schema(
   {
+    user:{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     name: { type: String, required: true },
     age: { type: Number, required: true },
-    gender: { type: String, required: true },
-    address: { type: String, required: true },
+    gender: { type: String, required: false },
+    address: { type: String, required: false },
     medicalHistory: [medicalHistorySchema],
     prescriptions: [prescriptionSchema],
     documents: [documentSchema],

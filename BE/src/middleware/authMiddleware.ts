@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { IUser } from "../models/User";  // Import IUser interface
-import { CustomRequest } from "../types";
+import { AuthRequest } from "../types";
 
 // Define the JwtPayload interface (the decoded JWT)
 interface JwtPayload {
@@ -9,7 +9,7 @@ interface JwtPayload {
   role: "doctor" | "nurse" | "admin" | "patient";  // Use the same role types as IUser
 }
 
-export const authMiddleware = (req: CustomRequest, res: Response, next: NextFunction): void => {
+export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction): void => {
   const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
@@ -21,13 +21,10 @@ export const authMiddleware = (req: CustomRequest, res: Response, next: NextFunc
     // Decode the token (only fetch id and role from it)
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "") as JwtPayload;
     req.user = {
-      _id: decoded.id,  // Assuming the decoded `id` maps to the user's _id
-      name: "",  // You might want to query the DB to populate these fields
-      email: "",
-      password: "",  // Never expose this, just here for example purposes
+      _id: decoded.id,
       role: decoded.role,  // Use the role from the JWT
       matchPassword: async () => true,  // Example stub, implement this function correctly
-    } as unknown as IUser;  // Type-cast as IUser
+    } ;  // Type-cast as IUser
 
     next();
   } catch (err) {
@@ -37,7 +34,7 @@ export const authMiddleware = (req: CustomRequest, res: Response, next: NextFunc
 
 export const roleMiddleware =
   (...allowedRoles: string[]) =>
-  (req: CustomRequest, res: Response, next: NextFunction): void => {
+  (req: AuthRequest, res: Response, next: NextFunction): void => {
     // Ensure req.user exists and role is available
     if (!allowedRoles.includes(req?.user?.role ?? '')) {
       res.status(403).json({ message: "Access denied" });
