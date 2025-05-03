@@ -17,13 +17,14 @@ export interface IDoctor extends Document {
 }
 
 const addressSchema: Schema<IAddress> = new Schema({
-  line1: { type: String, required: false },
-  line2: { type: String, required: false },
-  city: { type: String, required: true },
-  state: { type: String, required: true },
-  country: { type: String, required: true },
-  pincode: { type: String, required: true },
+  line1: { type: String },
+  line2: { type: String },
+  city: { type: String },
+  state: { type: String },
+  country: { type: String },
+  pincode: { type: String },
 });
+
 const doctorSchema: Schema<IDoctor> = new Schema(
   {
     user: {
@@ -32,22 +33,36 @@ const doctorSchema: Schema<IDoctor> = new Schema(
       required: true,
       unique: true
     },
-    specialization: { type: String, required: false },
-    workingHours: { type: String, required: false },
+    specialization: { type: String },
+    workingHours: { type: String },
+    
     clinicAddress: {
-      address: addressSchema,
-      location: {
-        type: {
-          type: String,
-          enum: ['Point'],
-          default: 'Point',
+      type: new mongoose.Schema(
+        {
+          address: {
+            line1: { type: String },
+            line2: { type: String },
+            city: { type: String },
+            state: { type: String },
+            country: { type: String },
+            pincode: { type: String },
+          },
+          location: {
+            type: {
+              type: String,
+              enum: ['Point'],
+              default: 'Point',
+            },
+            coordinates: {
+              type: [Number], // [longitude, latitude]
+            },
+          },
         },
-        coordinates: {
-          type: [Number], // [longitude, latitude]
-          required: true,
-        }
-      }
+        { _id: false } // prevent nested _id creation
+      ),
+      default: undefined, // makes the whole field optional
     },
+
     isAvailable: { type: Boolean, default: true },
     bio: { type: String },
     experience: { type: String },
@@ -64,6 +79,7 @@ const doctorSchema: Schema<IDoctor> = new Schema(
   },
   { timestamps: true }
 );
+
 
 // Index for geo-based queries (e.g. nearest doctor)
 doctorSchema.index({ 'clinicAddress.location': '2dsphere' });

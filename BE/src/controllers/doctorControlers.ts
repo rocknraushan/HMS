@@ -52,13 +52,35 @@ export const getNearbyDoctors= async (req:AuthRequest, res:Response):Promise<any
   }
 }
 
-export const addDoctorProfile = async (req: AuthRequest, res: Response): Promise<void> => {
-    try {
-        const {specialization, workingHours, clinicAddress, isAvailable, bio, experience, licenseNumber, education } = req.body;
-        const newDoctor = new Doctor({ user:req.user?._id, specialization, workingHours, clinicAddress, isAvailable, bio, experience, licenseNumber, education });
-        const savedDoctor = await newDoctor.save();
-        res.status(201).json(savedDoctor);
-    } catch (error) {
-        res.status(500).json({ message: (error as Error).message });
-    }
-}
+
+export const addDoctorProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?._id;
+
+    const doctorData = {
+      specialization: req.body.specialization,
+      workingHours: req.body.workingHours,
+      clinicAddress: req.body.clinicAddress,
+      isAvailable: req.body.isAvailable,
+      bio: req.body.bio,
+      experience: req.body.experience,
+      licenseNumber: req.body.licenseNumber,
+      education: req.body.education,
+      verified: req.body.verified,
+      homeVisit: req.body.homeVisit,
+      rating: req.body.rating,
+      user: userId, // make sure this is part of upsert
+    };
+
+    const updatedDoctor = await Doctor.findOneAndUpdate(
+      { user: userId },             // find doctor by user ID
+      { $set: doctorData },         // update fields
+      { new: true, upsert: true }   // return updated or create new
+    );
+
+    res.status(200).json(updatedDoctor);
+  } catch (error) {
+    console.error('Error upserting doctor profile:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

@@ -25,13 +25,13 @@ export async function createUser(req: Request, res: Response): Promise<any> {
     if (existingUser)
       return res.status(400).json({
         message: "User already exists",
-        email: "Email already registered",
+        errors: { email: "Email already registered" }
       });
 
     // Check if the role is valid
     const allowedRoles = ["doctor", "nurse", "patient", "emt"];
     if (!allowedRoles.includes(role)) {
-      return res.status(400).json({ message: "Invalid role" });
+      return res.status(400).json({ message: "Invalid role",errors: { role: "Role not allowed" } });
     }
 
     // Create the User document

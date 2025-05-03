@@ -14,6 +14,7 @@ import ChooseRoleScreen from '../welcome/ChooseRoleScreen';
 import StyledDropdown from '../../../components/Dropdown/StyledDropdown';
 import { Formik, FormikHandlers, FormikProps } from 'formik';
 import GenericLoader from '../../../components/loaders/GenericLoader';
+import Toast from 'react-native-toast-message';
 
 const { height, width } = Dimensions.get('window');
 const initialValue = {
@@ -64,8 +65,16 @@ const SignupScreen = (props: Props) => {
       console.log(response, 'Registration response');
     } catch (error: any) {
       console.log('Registration error:', error);
+      if (error?.response?.data?.errors) {
+        formikRef.current?.setErrors(error.response.data.errors);
+      }
+
       if (error?.response?.status == 400) {
-        Alert.alert("Error", error.response.data.message)
+       Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: error?.response?.data?.message || 'Something went wrong'
+       })
       }
     }
     finally{

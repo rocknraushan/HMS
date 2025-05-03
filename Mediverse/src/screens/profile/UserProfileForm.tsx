@@ -246,8 +246,7 @@ const UserProfileForm = (props: Props) => {
                     { label: 'B-', value: 'B-' },
                     { label: 'O-', value: 'O-' },
                     { label: 'AB+', value: 'AB+' },
-                    { label: 'AB-', value: 'AB-' },
-                    ,
+                    { label: 'AB-', value: 'AB-' }
                   ]}
                   placeholder="Blood Group"
                   value={values.bloodGroup}
