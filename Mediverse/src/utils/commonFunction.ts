@@ -1,3 +1,9 @@
+
+export type BufferType = {
+  data: number[];
+  type: 'Buffer';
+};
+
 export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): string => {
     const R = 6371; // Earth radius in km
     const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -11,4 +17,15 @@ export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2
     const distance = R * c;
     return `${distance.toFixed(2)} km`;
   };
+  
+
+  
+  
+  export function bufferToImageUrl(buffer: BufferType): string {
+    if (!buffer || !Array.isArray(buffer.data)) {
+      throw new Error('Invalid buffer object');
+    }
+  
+    return String.fromCharCode(...buffer.data);
+  }
   

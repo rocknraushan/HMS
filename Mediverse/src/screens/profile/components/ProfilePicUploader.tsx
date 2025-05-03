@@ -1,16 +1,39 @@
-import React, {useState, useCallback, useMemo, ChangeEvent} from 'react';
-import {View, Image, TouchableOpacity, StyleSheet} from 'react-native';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import ImageCropPicker from 'react-native-image-crop-picker';
-import VectorIcons, {IconSets} from '../../../components/Icons/VectorIcons';
-import {Icons} from '../../../assets/icons';
+import VectorIcons, { IconSets } from '../../../components/Icons/VectorIcons';
+import { Icons } from '../../../assets/icons';
 
-interface Props {
-  onSelect?: (e: {uri: string; type: string; name: string}) => void;
-  image?: string;
+interface BufferImage {
+  data: number[];
+  type: 'Buffer';
 }
 
-const ProfilePicUploader: React.FC<Props> = ({image, onSelect}) => {
-  const [imageUri, setImageUri] = useState<string | null>(image || null);
+interface Props {
+  onSelect?: (e: { uri: string; type: string; name: string }) => void;
+  image?: string | BufferImage;
+}
+
+const isBuffer = (img: any): img is BufferImage =>
+  img && typeof img === 'object' && img.type === 'Buffer' && Array.isArray(img.data);
+
+const bufferToUrl = (buffer: BufferImage): string =>
+  String.fromCharCode(...buffer.data);
+
+const ProfilePicUploader: React.FC<Props> = ({ image, onSelect }) => {
+  const [imageUri, setImageUri] = useState<string | null>(null);
+
+  // console.log("image", image);
+
+  useEffect(() => {
+    if (isBuffer(image)) {
+      setImageUri(bufferToUrl(image));
+    } else if (typeof image === 'string') {
+      setImageUri(image);
+    } else {
+      setImageUri(null);
+    }
+  }, [image]);
 
   const chooseImage = useCallback(() => {
     ImageCropPicker.openPicker({
@@ -19,26 +42,25 @@ const ProfilePicUploader: React.FC<Props> = ({image, onSelect}) => {
       cropping: true,
       mediaType: 'photo',
     })
-      .then(image => {
-        setImageUri(image.path);
+      .then(img => {
+        setImageUri(img.path);
         onSelect?.({
-          uri: image.path,
-          type: image.mime,
-          name: image.filename || 'profile.jpg',
+          uri: img.path,
+          type: img.mime,
+          name: img.filename || 'profile.jpg',
         });
       })
       .catch(error => console.log('ImagePicker Error:', error));
-  }, []);
+  }, [onSelect]);
 
-  // Memoize profile image to prevent unnecessary re-renders
   const profileImage = useMemo(() => {
-    return imageUri ? {uri: imageUri} : Icons.userIcon;
+    return imageUri ? { uri: imageUri } : Icons.userIcon;
   }, [imageUri]);
 
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={chooseImage} style={styles.profileContainer}>
-        <Image source={profileImage ?? image} style={styles.profileImage} />
+        <Image source={profileImage} style={styles.profileImage} />
         <View style={styles.editIcon}>
           <VectorIcons
             name="edit"

@@ -1,9 +1,9 @@
 import axios from 'axios';
 import * as Keychain from 'react-native-keychain';
 
-export const BASE_URL = 
-// "https://hms-f6xv.onrender.com/";
-"http://192.168.1.3:5000/";
+export const BASE_URL =
+  "https://hms-f6xv.onrender.com/";
+// "http://192.168.216.129:5000/";
 
 const getAxiosClient = async () => {
   const client = axios.create({
@@ -15,31 +15,39 @@ const getAxiosClient = async () => {
     try {
       const user = await Keychain.getGenericPassword();
       if (user && user.password) {
-        console.log(user.password,"credentials::::::::;")
         const { token, roles } = JSON.parse(user.password);
         request.headers.Authorization = `Bearer ${token}`;
+        console.log('🔐 Token attached:', token);
       }
     } catch (error) {
-      console.log('Error fetching auth token from Keychain:', error);
+      console.log('❌ Error fetching auth token from Keychain:', error);
     }
 
-    console.log(
-      'API REQUEST====>',
-      request?.url,
-      request?.params ?? {},
-      request?.headers ?? {},
-    );
+    if (request.baseURL && request.url) {
+
+      console.log('📤 API REQUEST ====>', {
+        method: request.method?.toUpperCase(),
+        url: request.baseURL + request.url,
+        params: request.params ?? {},
+        data: request.data ?? {},
+        headers: request.headers ?? {},
+      });
+    }
 
     return request;
   });
 
   client.interceptors.response.use(
     (response) => {
-      console.log(
-        'RESPONSE====>',
-        response?.status,
-        response?.config?.headers
-      );
+      if (response?.config.baseURL && response?.config.url) {
+
+        console.log('✅ API RESPONSE ====>', {
+          status: response.status,
+          // url: response.config?.baseURL + response?.config.url,
+          // headers: response.config.headers,
+          data: response.data,
+        });
+      }
 
       if (
         response?.status < 300 ||
@@ -49,27 +57,30 @@ const getAxiosClient = async () => {
         return response;
       }
 
-      console.error('API ERROR RESPONSE====>', response?.status);
+      console.error('⚠️ API ERROR RESPONSE ===>', {
+        status: response?.status,
+        data: response?.data,
+      });
       throw response?.data;
     },
     (error) => {
-      console.error(
-        'API ERROR====>',
-        error?.response?.config?.data,
-        error?.response?.status,
-        error?.response
-      );
+      console.error('❌ API ERROR ====>', {
+        method: error?.config?.method?.toUpperCase(),
+        url: error?.config?.baseURL + error?.config?.url,
+        status: error?.response?.status,
+        requestData: error?.config?.data,
+        responseData: error?.response?.data,
+        headers: error?.response?.headers,
+      });
 
       if (
         error?.response?.status === 401 ||
         error?.response?.data?.error?.err_str === 'E_REQUEST_UNAUTHORIZED'
       ) {
-        // Optionally, trigger logout or refresh token flow
         Keychain.resetGenericPassword()
           .then(() => {
-            console.log('Keychain reset successfully');
+            console.log('🔓 Keychain reset successfully due to unauthorized request');
           });
-
       }
 
       throw error;

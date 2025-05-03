@@ -6,6 +6,7 @@ import PromoBannerCarousel from './components/PromoBannerCarousel';
 import CategoryGrid from './components/CategoryGrid';
 import MedicalCenterCard from './components/MedicalCenterCard';
 import { img_4, img_5 } from '../../../assets';
+import { rspH } from '../../../theme/responsive';
 
 const centers = [
   { title: 'Sunrise Health Clinic', image: img_4 },
@@ -14,11 +15,10 @@ const centers = [
 
 const HomeScreen = () => {
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <SafeAreaView style={{ paddingHorizontal: 16 }}>
+      <SafeAreaView style={{ marginTop: rspH(16),flex:1 ,backgroundColor:'#fff'}}>
       <LocationHeader />
+    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <SearchBar />
-      </SafeAreaView>
       <PromoBannerCarousel />
       <View style={{paddingHorizontal:16}} >
       <CategoryGrid />
@@ -36,6 +36,8 @@ const HomeScreen = () => {
       /> 
       </View>
     </ScrollView>
+    </SafeAreaView>
+
   );
 };
 
@@ -43,8 +45,10 @@ export default HomeScreen;
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 16,
     backgroundColor: '#fff',
+    flexGrow: 1,
+    paddingBottom: rspH(16),
+    paddingHorizontal:rspH(10)
   },
   row: {
     marginTop: 24,

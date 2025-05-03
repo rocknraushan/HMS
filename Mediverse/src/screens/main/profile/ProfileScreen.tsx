@@ -85,7 +85,7 @@ const ProfileScreen = ({ navigation }: Props) => {
           <IconWithTextRow icon={<BellIcon />} label="Notifications" />
           <IconWithTextRow icon={<SettingsIcon />} label="Settings" />
           <IconWithTextRow icon={<TermsIcon />} label="Help and Support" />
-          <IconWithTextRow icon={<HelpIcon />} label="Terms and Conditions" />
+          <IconWithTextRow icon={<HelpIcon />} label="Terms and Conditions" onPress={()=>navigation.navigate('TermsScreen')} />
           <IconWithTextRow icon={<LogoutIcon />} label="Log Out" onPress={() => setShowLogout(true)} />
         </View>
       </ScrollView>

@@ -193,7 +193,7 @@ const NearbyHospitalsMap: React.FC = () => {
   };
 
   const handleCardPress = (place: Place) => {
-    skipFetchRef.current = true; // Skip fetch when the card is pressed
+    skipFetchRef.current = true; 
   
     const newRegion = {
       latitude: place.lat,
@@ -209,7 +209,7 @@ const NearbyHospitalsMap: React.FC = () => {
   const filterTypes = ['hospital', 'clinic', 'pharmacy'];
 
   const MemoizedCard = React.memo(({ item, onPress }: { item: Place, onPress: () => void }) => (
-    <TouchableOpacity activeOpacity={0.5} style={styles.card} onPress={onPress}>
+    <TouchableOpacity activeOpacity={0.2} style={styles.card} onPress={onPress}>
       <FastImage
         source={{ uri: item.image, priority: FastImage.priority.high,cache:FastImage.cacheControl.immutable }}
         style={styles.cardImage}
@@ -227,89 +227,67 @@ const NearbyHospitalsMap: React.FC = () => {
   ));
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+    <SafeAreaView style={[styles.container, { paddingTop: 0 }]}>
+  <StatusBar hidden={true} translucent backgroundColor="transparent" />
 
-      <GooglePlacesAutocomplete
-        placeholder="Search hospitals or locations"
-        fetchDetails
-        onPress={handlePlaceSelect}
-        query={{ key: GOOGLE_API_KEY, language: 'en' }}
-        styles={{
-          container: styles.searchContainer,
-          textInput: styles.searchInput,
-          textInputContainer: { backgroundColor: '#fff', borderRadius: 8 },
-          description: { color: '#000' },
+  <GooglePlacesAutocomplete
+    placeholder="Search hospitals or locations"
+    fetchDetails
+    onPress={handlePlaceSelect}
+    query={{ key: GOOGLE_API_KEY, language: 'en' }}
+    styles={{
+      container: styles.searchContainer,
+      textInput: styles.searchInput,
+      textInputContainer: { backgroundColor: '#fff', borderRadius: 8 },
+      description: { color: '#000' },
+    }}
+    textInputProps={{
+      placeholderTextColor: '#000',
+    }}
+    enablePoweredByContainer={false}
+  />
+
+  <MapView
+    ref={mapRef}
+    style={styles.map}
+    region={region}
+    onRegionChangeComplete={onRegionChangeComplete}
+  >
+    {places.map((place) => (
+      <Marker
+        key={place.id}
+        coordinate={{ latitude: place.lat, longitude: place.lng }}
+        title={place.name}
+        description={place.address}
+        pinColor={highlightedId === place.id ? 'blue' : 'red'}
+        onPress={() => {
+          skipFetchRef.current = true;
+          setHighlightedId(place.id);
         }}
-        textInputProps={{
-          placeholderTextColor: '#000',
-        }}
-        enablePoweredByContainer={false}
-      />
-
-      <View style={styles.filterContainer}>
-        {filterTypes.map((type) => (
-          <TouchableOpacity
-            key={type}
-            style={[
-              styles.filterButton,
-              selectedType === type && styles.selectedFilterButton,
-            ]}
-            onPress={() => setSelectedType(type)}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                selectedType === type && styles.selectedFilterText,
-              ]}
-            >
-              {type.charAt(0).toUpperCase() + type.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        region={region}
-        onRegionChangeComplete={onRegionChangeComplete}
       >
-        {places.map((place) => (
-          <Marker
-          key={place.id}
-          coordinate={{ latitude: place.lat, longitude: place.lng }}
-          title={place.name}
-          description={place.address}
-          pinColor={highlightedId === place.id ? 'blue' : 'red'}
-          onPress={() => {
-            skipFetchRef.current = true;
-            setHighlightedId(place.id);
-          }}
-        >
-          <Callout>
-            <View style={styles.tooltip}>
-              <Text>{place.name}</Text>
-              <Text>{place.address}</Text>
-            </View>
-          </Callout>
-        </Marker>
-        
-        ))}
-      </MapView>
+        <Callout>
+          <View style={styles.tooltip}>
+            <Text>{place.name}</Text>
+            <Text>{place.address}</Text>
+          </View>
+        </Callout>
+      </Marker>
+    ))}
+  </MapView>
 
-      <View style={styles.cardList}>
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={places}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <MemoizedCard item={item} onPress={() => handleCardPress(item)} />
-          )}
-        />
-      </View>
-    </SafeAreaView>
+  <View style={styles.cardList}>
+    <FlatList
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      data={places}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => (
+        <MemoizedCard item={item} onPress={() => handleCardPress(item)} />
+      )}
+    />
+  </View>
+</SafeAreaView>
+
   );
 };
 
@@ -373,6 +351,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 5,
+    height:'auto',
   },
   cardImage: {
     width: '100%',
