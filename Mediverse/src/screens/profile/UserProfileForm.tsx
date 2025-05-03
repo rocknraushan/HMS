@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -11,28 +11,43 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import VectorIcons, {IconSets} from '../../components/Icons/VectorIcons';
-import {NavigationProp} from '@react-navigation/native';
-import {RootStackParamList} from '../../navigation/navStrings';
+import VectorIcons, { IconSets } from '../../components/Icons/VectorIcons';
+import { NavigationProp } from '@react-navigation/native';
+import { RootStackParamList } from '../../navigation/navStrings';
 import ProfilePicUploader from './components/ProfilePicUploader';
-import {Formik, FormikHelpers, FormikProps} from 'formik';
+import { Formik, FormikHelpers, FormikProps } from 'formik';
 import CustomInput from '../../components/CustomInput/CustomInput';
 import StyledDropdown from '../../components/Dropdown/StyledDropdown';
 import PhoneInput from './components/PhoneInput';
 import PromiseButton from '../../components/CustomButton/PromiseButton';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import getAxiosClient from '../../HttpService/AxiosClient';
-import {Services} from '../../HttpService';
+import { Services } from '../../HttpService';
 import { callProfileUpdateApi, fetchProfile, profileValidation } from './ProfileFunctions';
 import SuccessModal from '../../components/loaders/SuccessModal';
 import PatientForm from './components/PatientForm';
 import DoctorForm from './components/DoctorForm';
 import { getInitialValues } from './components/ProfileVal';
+import { bufferToImageUrl, BufferType } from '../../utils/commonFunction';
 
 type Props = {
   navigation: NavigationProp<RootStackParamList, 'UserProfileForm'>;
 };
-
+type ProfilePicType = { uri: string; type: string; name: string } | BufferType;
+const initialValues = {
+  name: '',
+  age: '',
+  bloodGroup: '',
+  phone: '',
+  profilePic: {
+    uri: '',
+    type: '',
+    name: '',
+  } as { uri: string; type: string; name: string } | BufferType,
+  gender: '',
+  email: '',
+  dob: '',
+};
 const UserProfileForm = (props: Props) => {
   const [initVal, setInitVal] = useState(getInitialValues())
   const [profiledata, setProfiledata] = useState<any>(null);
@@ -55,25 +70,25 @@ const UserProfileForm = (props: Props) => {
     try {
       console.log('Form values:', values);
       const formData = new FormData();
-  
+
       Object.keys(values).forEach((key) => {
-        if (key === 'profilePic' && values.profilePic?.uri) {
+        if (key === 'profilePic' && 'uri' in values.profilePic && values.profilePic.uri) {
           formData.append('profilePic', {
-            uri: values.profilePic.uri,
+            uri: 'uri' in values.profilePic ? values.profilePic.uri : '',
             type: values.profilePic.type || 'image/jpeg',
-            name: values.profilePic.name || 'profile.jpg',
+            name: 'name' in values.profilePic ? values.profilePic.name : 'profile.jpg',
           });
         } else if (values[key as keyof typeof initVal] !== undefined) {
           formData.append(key, String(values[key as keyof typeof initVal]));
         }
       });
-      await callProfileUpdateApi(formData,props.navigation)
-    } catch (error:any) {
+      await callProfileUpdateApi(formData, props.navigation)
+    } catch (error: any) {
       console.log('Error:', error?.response?.data || error.message);
     }
   };
-  
-  const handleVerify = () => {};
+
+  const handleVerify = () => { };
   const handleOtpSubmit = (otp: string) => {
     console.log('OTP submitted:', otp);
     if (otp != '1234' || otp.length < 4) {
@@ -100,20 +115,18 @@ const UserProfileForm = (props: Props) => {
   async function getProfileData() {
     try {
       const data = await fetchProfile();
-      console.log(data,"profile:::::")
-      if(data.profile){
-        const {profile} = data
-        setProfiledata(profile)
-        console.log(profile,"data prof")
+      if (data.profile) {
+        const { profile } = data
+        console.log(profile, "data prof")
         const initValues = {
           name: profile.name || "",
           age: profile.age || '',
-          bloodGroup: profile.bloodGroup ||'',
-          phone:profile.phone || '',
-          // profilePic: {uri: profile.profilePic || '', type: '', name: ''},
-          gender: profile.gender||'',
-          email: profile.email ||'',
-          dob:profile.dob || '',
+          bloodGroup: profile.bloodGroup || '',
+          phone: profile.phone || '',
+          profilePic: { uri: profile.profilePic || '', type: '', name: '' },
+          gender: profile.gender || '',
+          email: profile.email || '',
+          dob: profile.dob || '',
         };
         setInitVal({
           ...initVal,
@@ -121,17 +134,27 @@ const UserProfileForm = (props: Props) => {
         });
       }
     } catch (error) {
-      
+
     }
   }
 
-  useEffect(()=>{
-    getProfileData();
-  },[])
+  const handleDobChange = (event: any, selectedDate: any) => {
+    const currentDate = selectedDate || new Date();
+    setShowDatePicker(false);
+    formikRef.current?.setFieldValue(
+      'dob',
+      currentDate.toLocaleDateString(),
+    );
+    const age = new Date().getFullYear() - currentDate.getFullYear();
+    formikRef.current?.setFieldValue('age', String(age));
+  }
 
+  useEffect(() => {
+    getProfileData();
+  }, [])
   return (
     <View style={styles.flex}>
-      <SuccessModal title='Congratulations!' subTitle='Your account is ready to use. You will be redirected to the Home Page in a few seconds...' duration={5000} visible={showSuccess} onClose={()=>setShowSuccess(false)}/>
+      <SuccessModal title='Congratulations!' subTitle='Your account is ready to use. You will be redirected to the Home Page in a few seconds...' duration={5000} visible={showSuccess} onClose={() => setShowSuccess(false)} />
       <SafeAreaView>
         <View style={styles.container}>
           <VectorIcons
@@ -153,10 +176,10 @@ const UserProfileForm = (props: Props) => {
       </SafeAreaView>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{flex: 1}}>
+        style={{ flex: 1 }}>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{paddingBottom: 100}}
+          contentContainerStyle={{ paddingBottom: 100 }}
           automaticallyAdjustKeyboardInsets
           keyboardShouldPersistTaps="handled"
           style={styles.scrollContainer}>
@@ -178,9 +201,15 @@ const UserProfileForm = (props: Props) => {
             }) => (
               <>
                 <ProfilePicUploader
-                  onSelect={(e)=>setFieldValue('profilePic',e)}
-                  image={values.profilePic?.uri || ""}
+                  onSelect={(e) => setFieldValue('profilePic', e)}
+                  image={
+                    values.profilePic && 'data' in values.profilePic
+                      ? values.profilePic 
+                      : values.profilePic?.uri || ''
+                  }
                 />
+
+
                 <CustomInput
                   placeholder="Full Name"
                   value={values.name}
@@ -210,9 +239,27 @@ const UserProfileForm = (props: Props) => {
                 />
                 <StyledDropdown
                   data={[
-                    {label: 'Male', value: 'male'},
-                    {label: 'Female', value: 'female'},
-                    {label: 'Other', value: 'other'},
+                    { label: 'A+', value: 'A+' },
+                    { label: 'B+', value: 'B+' },
+                    { label: 'O+', value: 'O+' },
+                    { label: 'A-', value: 'A-' },
+                    { label: 'B-', value: 'B-' },
+                    { label: 'O-', value: 'O-' },
+                    { label: 'AB+', value: 'AB+' },
+                    { label: 'AB-', value: 'AB-' },
+                    ,
+                  ]}
+                  placeholder="Blood Group"
+                  value={values.bloodGroup}
+                  onChangeText={handleChange('bloodGroup')}
+                  error={touched.bloodGroup && errors.bloodGroup}
+                  style={styles.fieldMargin}
+                />
+                <StyledDropdown
+                  data={[
+                    { label: 'Male', value: 'male' },
+                    { label: 'Female', value: 'female' },
+                    { label: 'Other', value: 'other' },
                   ]}
                   placeholder="Gender"
                   value={values.gender}
@@ -228,7 +275,7 @@ const UserProfileForm = (props: Props) => {
                   extra={{
                     keyboardType: 'email-address',
                     inputMode: 'email',
-                    editable:false
+                    editable: false
                   }}
                   leftIcon={
                     <VectorIcons
