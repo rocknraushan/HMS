@@ -3,14 +3,14 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IMedicalHistory {
   condition: string;
   diagnosisDate: Date;
-  notes?: string;
+  advice?: string;
 }
 
 export interface IPrescription {
   prescribedBy: mongoose.Types.ObjectId | string; // Refers to User with role: 'doctor' or 'nurse'
   date: Date;
   medications: string;
-  notes?: string;
+  advice?: string;
 }
 
 export interface IDocument {
@@ -37,14 +37,14 @@ export interface IPatient extends Document {
 const medicalHistorySchema: Schema = new Schema({
   condition: { type: String, required: true },
   diagnosisDate: { type: Date, required: true },
-  notes: { type: String },
+  advice: { type: String },
 });
 
 const prescriptionSchema: Schema = new Schema({
   prescribedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', required: true },
   date: { type: Date, required: true },
   medications: { type: String, required: true },
-  notes: { type: String },
+  advice: { type: String },
 });
 
 const documentSchema: Schema = new Schema({

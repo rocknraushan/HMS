@@ -6,6 +6,15 @@ export interface ILocation {
   coordinates: [number, number];
 }
 
+export interface IAddress {
+  line1: string;
+  line2: string;
+  city: string;
+  state: string;
+  country: string;
+  pincode: string;
+}
+
 export interface IUser extends Document {
   firstName: string;
   lastName: string;
@@ -22,6 +31,8 @@ export interface IUser extends Document {
   phone?: string;
   firstLogin: boolean;
   location?: ILocation;
+  address?: IAddress;
+
 }
 
 const userSchema: Schema<IUser> = new Schema(
@@ -38,6 +49,14 @@ const userSchema: Schema<IUser> = new Schema(
     firstLogin: { type: Boolean, default: true },
     resetPasswordExpiry: { type: Number, default: null },
     resetPasswordToken: { type: String, default: null },
+    address: {
+      line1: { type: String },
+      line2: { type: String },
+      city: { type: String },
+      state: { type: String },
+      country: { type: String },
+      pincode: { type: String }
+    },
     location: {
       type: {
         type: String,
