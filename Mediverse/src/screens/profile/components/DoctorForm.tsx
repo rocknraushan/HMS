@@ -1,13 +1,23 @@
-import { Button, StyleSheet, Text, View } from 'react-native';
-import React, { memo } from 'react';
+import { Button, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { memo, useEffect, useState } from 'react';
 import VectorIcons, { IconSets } from '../../../components/Icons/VectorIcons';
 import StyledDropdown from '../../../components/Dropdown/StyledDropdown';
-import { FormikProps } from 'formik';
+import { Formik, FormikHelpers, FormikProps } from 'formik';
 import DocumentPicker from 'react-native-document-picker';
 import CustomInput from '../../../components/CustomInput/CustomInput';
+import Toast from 'react-native-toast-message';
+import { callProfileUpdateApi, profileValidation } from '../ProfileFunctions';
+import { get, values } from 'lodash';
+import PhoneInput from './PhoneInput';
+import ProfilePicUploader from './ProfilePicUploader';
+import { DoctorFormValues, UserVal } from './ProfileVal';
+import Geolocation from '@react-native-community/geolocation';
+import CustomDatePicker from '../../../components/customDatePicker/CustomDatePicker';
+import PromiseButton from '../../../components/CustomButton/PromiseButton';
 
 type Props = {
-  formikRef: FormikProps<any> | null;
+  data: any;
+  navigation: any;
 };
 const doctorSpecializations = [
   { label: "General Physician", value: "general_physician" },
@@ -37,18 +47,69 @@ const doctorSpecializations = [
   { label: "Sports Medicine Specialist", value: "sports_medicine_specialist" }
 ];
 
+const genderData = [
+  {label:"Male", value:"male"},
+  {label:"Female", value:"female"},
+  {label:"Other", value:"other"}
+]
 
-const DoctorForm: React.FC<Props> = ({ formikRef }) => {
-  const {
-    handleChange,
-    handleBlur,
-    handleSubmit,
-    setFieldValue,
-    values,
-    touched,
-    errors,
-  } = formikRef as FormikProps<any>;
+export const doctorVal: DoctorFormValues = {
+  ...UserVal,
+  specialization: '',
+  workingHours: {
+    start: '',
+    end: ''
+  },
 
+  location
+    : {
+    type: "Point",
+    coordinates: [0, 0]
+  },
+  clinicAddress: {
+      city: '',
+      country: '',
+      line1: "",
+      line2: "",
+      pincode: "",
+      state: ""
+  },
+  isAvailable: true,
+  bio: '',
+  experience: '',
+  homeVisit: false,
+  licenseNumber: '',
+  education: '',
+};
+
+
+const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
+  const formikRef = React.useRef<FormikProps<any>>(null);
+  const [formVal, setFormVal] = useState(doctorVal);
+
+  const [verificationError, setVerificationError] = useState<string | null>(
+    null,
+  );
+  const [resendError, setResendError] = useState<string | null>(null);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+
+  useEffect(() => {
+    console.log('DoctorForm data:', data);
+    setFormVal({
+      ...doctorVal,
+      ...data,
+      workingHours: {
+        start: data?.workingHours?.start,
+        end: data?.workingHours?.end
+      }
+        });
+  
+    return () => {
+      
+    }
+  }, [data]);
+  
   const handleDocumentPick = async () => {
     try {
       const res = await DocumentPicker.pick({
@@ -61,7 +122,7 @@ const DoctorForm: React.FC<Props> = ({ formikRef }) => {
         url: doc.uri,
       }));
 
-      setFieldValue('documents', [...(values.documents || []), ...formattedDocs]);
+      formikRef.current?.setFieldValue('documents', [...(formikRef.current?.values.documents || []), ...formattedDocs]);
     } catch (err) {
       if (DocumentPicker.isCancel(err)) {
         console.log('User cancelled document picker');
@@ -70,128 +131,337 @@ const DoctorForm: React.FC<Props> = ({ formikRef }) => {
       }
     }
   };
+  const updateProfile = async (
+    values: DoctorFormValues,
+    formikHelpers: FormikHelpers<any>
+  ) => {
+    try {
+      console.log('Form values:', values);
+      const formData = new FormData();
+  
+      Object.keys(values).forEach((key) => {
+        if (key === 'profilePic' && 'uri' in values.profilePic && values.profilePic.uri) {
+          formData.append('profilePic', {
+            uri: values.profilePic.uri,
+            type: values.profilePic.type || 'image/jpeg',
+            name: values.profilePic.name || 'profile.jpg',
+          } as any); // Add `as any` to satisfy FormData type in React Native
+        } else if (
+          typeof values[key as keyof DoctorFormValues] === 'object'
+        ) {
+          formData.append(key, JSON.stringify(values[key as keyof DoctorFormValues]));
+        } else if (values[key as keyof DoctorFormValues] !== undefined) {
+          formData.append(key, String(values[key as keyof DoctorFormValues]));
+        }
+      });
+  
+      await callProfileUpdateApi(formData, navigation);
+    } catch (error: any) {
+      console.log('Error:', error?.response?.data || error.message);
+    }
+  };
+  
 
+  const handleShift = (key: string) => (value: string) => {
+    if (key === 'workingHoursFrom') {
+      formikRef.current?.setFieldValue('workingHours', value);
+    } else if (key === 'workingHoursTo') {
+      formikRef.current?.setFieldValue('workingHours', formikRef.current?.values.workingHours + ' - ' + value);
+    }
+  }
+
+  const handleVerify = () => { };
+  const handleOtpSubmit = (otp: string) => {
+    console.log('OTP submitted:', otp);
+    if (otp != '1234' || otp.length < 4) {
+      setVerificationError('Invalid OTP');
+      return;
+    }
+    setVerificationError(null);
+    setIsVerified(true);
+  };
+  const getLocation = async () => {
+    Geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        console.log(formikRef.current?.values.location,'Latitude:', latitude, 'Longitude:', longitude, position);
+        formikRef.current?.setFieldValue('location', {
+            type: "Point",
+            coordinates: [longitude, latitude]
+        });
+      },
+      (error) => {
+        console.error('Error getting location:', error.message);
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Unable to get location. Please try again.',
+        });
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+    );
+  };
+
+  const handleResend = () => {
+    setResendLoading(true);
+    if (formikRef.current?.values)
+      console.log('🔁 Resending OTP to', formikRef.current.values.phone);
+    setTimeout(() => {
+      setResendLoading(false);
+      Toast.show({
+        type: 'success',
+        text1: 'OTP Resent',
+        text2: `OTP has been resent to ${formikRef?.current?.values.phone}`,
+      });
+    }, 1000);
+  };
   return (
-    <View>
-      <StyledDropdown
-        data={doctorSpecializations}
-        placeholder="Blood Group"
-        value={values.bloodGroup}
-        onChangeText={handleChange('bloodGroup')}
-        error={touched.bloodGroup && errors.bloodGroup}
-        style={styles.fieldMargin}
-        
-        leftIcon={
-          <View style={{ alignItems: 'center', justifyContent: 'center', backgroundColor: "#FFF" }}>
-            <VectorIcons
-              name="medical-services"
-              size={20}
-              color="#9CA3AF"
-              iconSet={IconSets.MaterialIcons}
+    <Formik
+      initialValues={formVal}
+      innerRef={formikRef}
+      validationSchema={profileValidation}
+      enableReinitialize
+      onSubmit={updateProfile}>
+      {({
+        handleChange,
+        handleBlur,
+        handleSubmit,
+        values,
+        errors,
+        isSubmitting,
+        touched,
+        setFieldValue
+      }) => (
+        <>
+          <ProfilePicUploader
+            onSelect={(e) => setFieldValue('profilePic', e)}
+            image={
+              values.profilePic && 'data' in values.profilePic
+                ? values.profilePic
+                //@ts-ignore
+                : values.profilePic?.uri || ''
+            }
+          />
+          <CustomInput
+            placeholder="Full Name"
+            value={values.name}
+            onChangeText={handleChange('name')}
+            error={touched.name && errors.name}
+            containerStyle={styles.fieldMargin}
+            leftIcon={
+              <VectorIcons
+                name="person"
+                size={20}
+                color="#9CA3AF"
+                iconSet={IconSets.MaterialIcons}
+              />
+            }
+          />
+          <CustomInput
+            placeholder="Email"
+            value={values.email}
+            onChangeText={handleChange('email')}
+            error={touched.email && errors.email}
+            extra={{
+              keyboardType: 'email-address',
+              inputMode: 'email',
+              editable: false,
+            }}
+            leftIcon={
+              <VectorIcons
+                name="email"
+                size={20}
+                color="#9CA3AF"
+                iconSet={IconSets.MaterialIcons}
+              />
+            }
+            containerStyle={[styles.fieldMargin]}
+          />
+          <PhoneInput
+            value={values.phone}
+            onChange={handleChange('phone')}
+            onVerify={handleVerify}
+            onResend={handleResend}
+            error={touched.phone && errors.phone}
+            verificationError={verificationError}
+            resendError={resendError}
+            resendLoading={resendLoading}
+            isVerified={isVerified}
+            onSubmitOtp={handleOtpSubmit}
+          />
+          <StyledDropdown
+            data={genderData}
+            value={values.gender}
+            onChangeText={handleChange("gender")}
+            error={touched.gender && errors.gender}
+            />
+
+          <StyledDropdown
+            data={doctorSpecializations}
+            placeholder="Select Specialization"
+            label="Specialization"
+            value={values.specialization}
+            onChangeText={handleChange('specialization')}
+            leftIcon={
+              <VectorIcons
+                name="medical-services"
+                size={20}
+                color="#9CA3AF"
+                iconSet={IconSets.MaterialIcons}
+                style={{alignSelf: 'center'}}
+                />}
+          />
+          <CustomInput
+            placeholder="License Number"
+            value={values.licenseNumber}
+            onChangeText={handleChange('licenseNumber')}
+            error={touched.licenseNumber && errors.licenseNumber}
+            containerStyle={[styles.fieldMargin]}
+            leftIcon={
+              <VectorIcons
+                name="card-membership"
+                size={20}
+                color="#9CA3AF"
+                iconSet={IconSets.MaterialIcons}
+              />
+            }
+          />
+          <CustomInput
+            placeholder="Education"
+            value={values.education}
+            onChangeText={handleChange('education')}
+            error={touched.education && errors.education}
+            containerStyle={[styles.fieldMargin]}
+            leftIcon={
+              <VectorIcons
+                name="school"
+                size={20}
+                color="#9CA3AF"
+                iconSet={IconSets.MaterialIcons}
+              />
+            }
+            />
+          <CustomInput
+            placeholder="Experience (in years)"
+            value={`${values.experience}`}
+            extra={{
+              keyboardType: 'numeric',
+              inputMode: 'numeric',
+            }}
+            onChangeText={handleChange('experience')}
+            error={touched.experience && errors.experience}
+            containerStyle={[styles.fieldMargin]}
+          />
+          <Text style={styles.labelStyleBase} >Working Hour</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <CustomDatePicker
+              mode='time'
+              is24Hour={true}
+              value={values.workingHours.start}
+              handleChange={handleChange('workingHours.start')}
+              error={touched.workingHours && errors.workingHours}
+              containerStyle={[{ width: "40%" }]}
+              placeholder='Start Time'
+              format='HH:mm'
+            />
+            <Text style={styles.labelStyleBase} >To</Text>
+            <CustomDatePicker
+              mode='time'
+              is24Hour={true}
+              value={values.workingHours.end}
+              format='HH:mm'
+              handleChange={handleChange('workingHours.end')}
+              error={touched.workingHours && errors.workingHours}
+              containerStyle={[{ width: "40%" }]}
+              placeholder='End Time'
             />
           </View>
-        }
-      />
-
-      <CustomInput
-        placeholder="Working Hours"
-        value={values.workingHours}
-        onChangeText={handleChange('workingHours')}
-        error={touched.workingHours && errors.workingHours}
-        containerStyle={styles.fieldMargin}
-        leftIcon={
-          <VectorIcons
-            name="schedule"
-            size={20}
-            color="#9CA3AF"
-            iconSet={IconSets.MaterialIcons}
+          <Text style={styles.labelStyleBase} >Clinic Address</Text>
+          <CustomInput
+            placeholder="Address Line 1"
+            value={`${values.clinicAddress?.line1}`}
+            onChangeText={handleChange('clinicAddress.line1')}
+            error={touched.clinicAddress && errors.clinicAddress}
           />
-        }
-      />
-
-      <CustomInput
-        placeholder="Clinic Address"
-        value={values.clinicAddress}
-        onChangeText={handleChange('clinicAddress')}
-        error={touched.clinicAddress && errors.clinicAddress}
-        containerStyle={styles.fieldMargin}
-        leftIcon={
-          <VectorIcons
-            name="location-city"
-            size={20}
-            color="#9CA3AF"
-            iconSet={IconSets.MaterialIcons}
+          <CustomInput
+            placeholder="Address Line 2"
+            value={`${values.clinicAddress?.line2}`}
+            onChangeText={handleChange('clinicAddress.line2')}
+            error={touched.clinicAddress && errors.clinicAddress}
+            containerStyle={[styles.fieldMargin]}
           />
-        }
-      />
-
-      <CustomInput
-        placeholder="Bio"
-        value={values.bio}
-        onChangeText={handleChange('bio')}
-        extra={{
-          multiline: true,
-          numberOfLines: 3,
-        }}
-        error={touched.bio && errors.bio}
-        containerStyle={styles.fieldMargin}
-        leftIcon={
-          <VectorIcons
-            name="info"
-            size={20}
-            color="#9CA3AF"
-            iconSet={IconSets.MaterialIcons}
+          <CustomInput
+            placeholder="City"
+            value={`${values.clinicAddress?.city}`}
+            onChangeText={handleChange('clinicAddress.city')}
+            error={touched.clinicAddress && errors.clinicAddress}
+            containerStyle={[styles.fieldMargin]}
           />
-        }
-      />
-
-      <CustomInput
-        placeholder="Experience (e.g., 10 years)"
-        value={values.experience}
-        onChangeText={handleChange('experience')}
-        error={touched.experience && errors.experience}
-        containerStyle={styles.fieldMargin}
-        leftIcon={
-          <VectorIcons
-            name="school"
-            size={20}
-            color="#9CA3AF"
-            iconSet={IconSets.MaterialIcons}
+          <CustomInput
+            placeholder="State"
+            value={`${values.clinicAddress?.state}`}
+            onChangeText={handleChange('clinicAddress.state')}
+            error={touched.clinicAddress && errors.clinicAddress}
+            containerStyle={[styles.fieldMargin]}
           />
-        }
-      />
-
-      <StyledDropdown
-        data={[
-          { label: 'Available', value: true },
-          { label: 'Not Available', value: false },
-        ]}
-        placeholder="Availability"
-        value={values.isAvailable}
-        onChangeText={handleChange('isAvailable')}
-        style={styles.fieldMargin}
-        error={touched.isAvailable && errors.isAvailable}
-      />
-
-      <Button title="Upload Document(s)" onPress={handleDocumentPick} />
-      {values.documents?.length > 0 && (
-        <View style={{ marginTop: 10 }}>
-          <Text>Selected Documents:</Text>
-          {values.documents.map((doc: any, idx: number) => (
-            <Text key={idx} style={{ fontSize: 12 }}>
-              • {doc.title}
-            </Text>
-          ))}
-        </View>
+          <CustomInput
+            placeholder="Country"
+            value={`${values.clinicAddress?.country}`}
+            onChangeText={handleChange('clinicAddress.country')}
+            error={touched.clinicAddress && errors.clinicAddress}
+            containerStyle={[styles.fieldMargin]}
+          />
+          <CustomInput
+            placeholder="Pincode"
+            value={`${values.clinicAddress?.pincode}`}
+            onChangeText={handleChange('clinicAddress.pincode')}
+            error={touched.clinicAddress && errors.clinicAddress}
+            containerStyle={[styles.fieldMargin]}
+          />
+          <View style={styles.rowCenter}>
+            <Text style={{ color: 'rgba(28, 42, 58, 1)'}}>{`${JSON.stringify(values.location.coordinates)}`}</Text>
+          <Pressable style={{ flexDirection: 'row', alignSelf: 'flex-end' }} onPress={getLocation}>
+            <Text style={{ color: 'rgba(28, 42, 58, 1)' }}>{`Get Current Location`}</Text>
+            <VectorIcons
+              name="location-on"
+              size={20}
+              color="rgba(28, 42, 58, 1)"
+              iconSet={IconSets.MaterialIcons} />
+          </Pressable>
+          </View>
+          <CustomInput
+            placeholder="Bio"
+            value={values.bio}
+            onChangeText={handleChange('bio')}
+            error={touched.bio && errors.bio}
+            containerStyle={[styles.fieldMargin]}
+          />
+          <PromiseButton
+            text='Update Profile'
+            loading={isSubmitting}
+            onPress={()=>updateProfile(values, {} as FormikHelpers<any>)}
+            style={[styles.fieldMargin]}
+          />
+        </>
       )}
-    </View>
+    </Formik>
   );
 };
 
 export default memo(DoctorForm);
 
 const styles = StyleSheet.create({
+  rowCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   fieldMargin: {
     marginTop: 20,
   },
+  labelStyleBase: {
+    fontSize: 14,
+    color: "rgba(28, 42, 58, 1)",
+    marginBottom: 5,
+  }
 });

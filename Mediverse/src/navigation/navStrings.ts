@@ -18,6 +18,7 @@ export type RootStackParamList = {
   UserProfileForm: undefined;
   DoctorTab: undefined;
   TermsScreen:undefined;
+  PROFILE_HOME: undefined;
 };
 
 export const navStrings = {

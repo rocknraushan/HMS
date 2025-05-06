@@ -13,6 +13,7 @@ import cloudinary from "../config/cludinary";
 import otpGenerator from 'otp-generator'
 import Patient from "../models/Patients";
 import { AuthRequest } from "index";
+import { tryParseJSON } from "../utils/GenericFunctions";
 
 const FRONTEND_APP_URL = "http://www.evaidhya.site/";
 
@@ -117,10 +118,10 @@ export async function createUser(req: Request, res: Response): Promise<any> {
           token: deviceToken,
         })
         .then((response) => {
-          console.log("Successfully sent message:", response);
+          // // console.log("Successfully sent message:", response);
         })
         .catch((error) => {
-          console.error("Error sending message:", error);
+          // // console.error("Error sending message:", error);
         });
     }
 
@@ -153,7 +154,7 @@ export async function userLogin(req: Request, res: Response): Promise<any> {
   try {
     switch (loginType) {
       case "google":
-        console.log("Google login data", socialData);
+        // // console.log("Google login data", socialData);
         const socialUser = await User.findOne({ email: socialData.email });
         if (!socialUser) {
           const dummyPassword = crypto.randomBytes(16).toString("hex");
@@ -247,7 +248,7 @@ export async function userLogin(req: Request, res: Response): Promise<any> {
         res.status(201).json({ token: token, firstLogin: user.firstLogin, role: user.role });
     }
   } catch (err) {
-    console.error("Login error:", err);
+    // console.error("Login error:", err);
     res.status(500).json({ error: "Server error" });
   }
 }
@@ -317,7 +318,7 @@ export async function forgetPassword(req: Request, res: Response): Promise<any> 
     });
 
   } catch (error) {
-    console.error("Error in forgetPassword:", error);
+    // console.error("Error in forgetPassword:", error);
     res.status(500).json({ message: "An error occurred.", error });
   }
 }
@@ -325,7 +326,7 @@ export async function forgetPassword(req: Request, res: Response): Promise<any> 
 export async function verifyOtpAndResetPassword(req: Request, res: Response): Promise<any> {
   try {
     const { email, otp, newPassword } = req.body;
-    console.log(req.body, "body")
+    // console.log(req.body, "body")
     if (!email || !otp || !newPassword) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -337,8 +338,8 @@ export async function verifyOtpAndResetPassword(req: Request, res: Response): Pr
     }
 
     // Check OTP and expiry
-    console.log(user.resetPasswordToken, "user otp")
-    console.log(user.resetPasswordExpiry, "user otp expiry")
+    // console.log(user.resetPasswordToken, "user otp")
+    // console.log(user.resetPasswordExpiry, "user otp expiry")
     if (
       user.resetPasswordToken !== otp ||
       !user.resetPasswordExpiry ||
@@ -358,10 +359,13 @@ export async function verifyOtpAndResetPassword(req: Request, res: Response): Pr
     return res.status(200).json({ message: "Password reset successful" });
 
   } catch (error) {
-    console.error("Error in verifyOtpAndResetPassword:", error);
+    // console.error("Error in verifyOtpAndResetPassword:", error);
     res.status(500).json({ message: "An error occurred.", error });
   }
 }
+
+// Utility function to safely parse JSON
+
 
 export async function updateProfile(req: AuthRequest, res: Response): Promise<any> {
   const profilePic = req.file;
@@ -372,7 +376,7 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
   }
 
   try {
-    const baseFields :(keyof IUser)[] = ['name', 'email', 'phone', 'gender',"firstName","lastName"];
+    const baseFields: (keyof IUser)[] = ['name', 'email', 'phone', 'gender', 'firstName', 'lastName'];
     const updatedData: Partial<IUser> = { firstLogin: false };
 
     // Base profile fields update
@@ -383,9 +387,9 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
     }
 
     // Upload profile picture if provided
-    if (profilePic) {
-      const streamUpload = (buffer: Buffer) => {
-        return new Promise<{ secure_url: string }>((resolve, reject) => {
+    if (profilePic && profilePic.buffer) {
+      const streamUpload = (buffer: Buffer): Promise<{ secure_url: string }> => {
+        return new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
             { folder: 'profile_pics' },
             (error, result) => {
@@ -402,8 +406,11 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
 
       const result = await streamUpload(profilePic.buffer);
       updatedData.profilePic = result.secure_url;
-      console.log(updateProfile, "pic upload result")
+      // console.log('Profile pic uploaded to:', result.secure_url);
     }
+
+    // Parse JSON fields (like 'workingHours', 'clinicAddress') before updating
+    
 
     // Update main user model
     const updatedUser = await User.findByIdAndUpdate(user._id, updatedData, {
@@ -434,21 +441,24 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
         );
         break;
 
-      case 'doctor':
-        await Doctor.findOneAndUpdate(
-          { user: user._id },
-          {
-            specialization: req.body.specialization,
-            workingHours: req.body.workingHours,
-            clinicAddress: req.body.clinicAddress,
-            isAvailable: req.body.isAvailable,
-            bio: req.body.bio,
-            experience: req.body.experience
-          },
-          { upsert: true, new: true }
-        );
-        break;
-
+        case 'doctor':
+          const workingHours = tryParseJSON(req.body.workingHours);
+          const clinicAddress = tryParseJSON(req.body.clinicAddress);
+          const location = tryParseJSON(req.body.location);
+        // console.log(location, "location====>")
+          await Doctor.findOneAndUpdate(
+            { user: user._id },
+            {
+              ...req.body,
+              isAvailable: req.body.isAvailable,
+              workingHours,
+              clinicAddress,
+              location,
+            },
+            { upsert: true, new: true }
+          );
+          break;
+        
       case 'nurse':
         await Nurse.findOneAndUpdate(
           { user: user._id },
@@ -457,7 +467,7 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
             experience: req.body.experience,
             bio: req.body.bio,
             licenseNumber: req.body.licenseNumber,
-            education: req.body.education
+            education: req.body.education,
           },
           { upsert: true, new: true }
         );
@@ -479,15 +489,16 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
         break;
 
       default:
-        console.warn(`No role-specific model handler for role: ${user.role}`);
+        // console.warn(`No role-specific model handler for role: ${user.role}`);
     }
 
     res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
   } catch (error) {
-    console.error('Error updating profile:', error);
+    // console.error('Error updating profile:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 }
+
 
 
 export async function getProfile(req: AuthRequest, res: Response): Promise<any> {
@@ -505,22 +516,23 @@ export async function getProfile(req: AuthRequest, res: Response): Promise<any> 
 
     switch (user.role) {
       case 'patient': {
-        const patient = await Patient.findOne({ userId }).select("height weight allergies address medicalHistory prescriptions documents");
+        const patient = await Patient.findOne({ user:userId }).select("height weight allergies address medicalHistory prescriptions documents");
         if (patient) roleData = patient.toObject();
         break;
       }
       case 'doctor': {
-        const doctor = await Doctor.findOne({ userId }).select("specialization isAvailable experience licenseNumber verified bio workingHours clinicAddress rating verified education");
+        const doctor = await Doctor.findOne({ user:userId }).select("specialization isAvailable experience licenseNumber verified bio workingHours clinicAddress rating verified education");
+        // console.log(doctor, "doctor data===>")
         if (doctor) roleData = doctor.toObject();
         break;
       }
       case 'nurse': {
-        const nurse = await Nurse.findOne({ userId }).select("isAvailable specialization experience verified bio education licenseNumber rating");
+        const nurse = await Nurse.findOne({ user:userId }).select("isAvailable specialization experience verified bio education licenseNumber rating");
         if (nurse) roleData = nurse.toObject();
         break;
       }
       case 'emt': {
-        const emt = await EMT.findOne({ userId }).select("isAvailable location ambulanceNumber");
+        const emt = await EMT.findOne({ user:userId }).select("isAvailable location ambulanceNumber");
         if (emt) roleData = emt.toObject();
         break;
       }
@@ -539,7 +551,53 @@ export async function getProfile(req: AuthRequest, res: Response): Promise<any> 
       }
     });
   } catch (error) {
-    console.error("Error fetching profile:", error);
+    // console.error("Error fetching profile:", error);
     res.status(500).json({ message: "Server error", error });
   }
 }
+
+export async function uploadProfilePic(req: AuthRequest, res: Response): Promise<any> {
+  const user = req.user;
+  const profilePic = req.file;
+  // console.log(user,profilePic, "<======user and profile pic")
+
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  try {
+    if (profilePic?.buffer) {
+      const streamUpload = (buffer: Buffer): Promise<{ secure_url: string }> => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: 'profile_pics' },
+            (error, result) => {
+              if (result) {
+                resolve(result);
+              } else {
+                reject(error);
+              }
+            }
+          );
+          streamifier.createReadStream(buffer).pipe(stream);
+        });
+      };
+
+      const result = await streamUpload(profilePic.buffer);
+
+      await User.findByIdAndUpdate(user._id, { profilePic: result.secure_url });
+
+      res.status(200).json({
+        message: 'Profile picture updated successfully',
+        profilePicUrl: result.secure_url,
+      });
+    } else {
+      res.status(400).json({ message: 'No profile picture provided' });
+    }
+
+  } catch (error) {
+    // console.error('Error updating profile picture:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+}
+

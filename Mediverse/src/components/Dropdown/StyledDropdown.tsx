@@ -4,6 +4,7 @@ import {rspF, rspH, rspW} from '../../theme/responsive';
 import {StyleProp, StyleSheet, Text, View, ViewStyle} from 'react-native';
 import {Theme} from '../../theme/colors';
 import { ThemeContext } from '../../../App';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 export interface DropdownType {
   label: string;
@@ -26,6 +27,8 @@ interface DropdownProps {
   leftIcon?: React.ReactNode;
   multiple?: boolean;
   selected?: DropdownType[];
+  label?: string;
+  labelStyle?: StyleProp<ViewStyle>;
 }
 
 const StyledDropdown = ({
@@ -39,6 +42,11 @@ const StyledDropdown = ({
   search,
   style,
   leftIcon,
+  label,
+  labelStyle,
+  multiple,
+  selected,
+  renderItem
 }: DropdownProps) => {
   const {theme} = useContext(ThemeContext);
   const styles = styleSheet(theme);
@@ -52,12 +60,18 @@ const StyledDropdown = ({
   }, []);
 
   return (
+    <Animated.View
+      entering={FadeIn.duration(300)}
+      exiting={FadeOut.duration(300)}
+      >
+      {label && (
+        <Text style={[styles.labelStyleBase, labelStyle]}>{label}</Text>
+      )}
     <View style={[styles.listWrapper,style]}>
       {leftIcon && (
         leftIcon
       )}
       <Dropdown
-
         data={data}
         placeholder={placeholder}
         labelField="label"
@@ -103,6 +117,7 @@ const StyledDropdown = ({
 
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
+    </Animated.View>
   );
 };
 const styleSheet = (theme: Theme) =>
@@ -119,6 +134,11 @@ const styleSheet = (theme: Theme) =>
     paddingStart:10,
     backgroundColor: theme.white,
   },
+    labelStyleBase: {
+      fontSize: rspF(14),
+      color: theme.Black,
+      marginBottom: 5,
+    },
     dropdown: {
       paddingHorizontal: rspW(12),
       height: 50,

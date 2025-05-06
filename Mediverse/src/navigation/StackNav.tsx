@@ -19,7 +19,6 @@ const StackNav = () => {
     initialRouteName='SPLASH'
       screenOptions={{ headerShown: false, animation: 'default' }}>
       <Stack.Screen name="SPLASH" options={{ navigationBarColor: '#000', navigationBarTranslucent: true, navigationBarHidden: true }} component={Splash} />
-      <Stack.Screen name="ChooseRoleScreen" options={{ statusBarStyle: "dark",navigationBarColor:"rgba(94,197,174,0.5)"}} component={ChooseRoleScreen} />
       <Stack.Screen name="LOGIN" component={Login} options={{ navigationBarColor: '#f8f8f8', statusBarStyle: "dark", statusBarBackgroundColor: "#f8f8f8" }} />
       <Stack.Screen name="SIGNUP" component={SignupScreen} options={{ navigationBarColor: '#f8f8f8', statusBarStyle: "dark", statusBarBackgroundColor: "#f8f8f8" }} />
       <Stack.Screen name='WELCOME' component={Welcome} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true, statusBarTranslucent:true }} />

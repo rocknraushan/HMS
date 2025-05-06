@@ -193,7 +193,9 @@ const LoginScreen = (props: Props) => {
                   extra={{
                     keyboardType: 'visible-password',
                     inputMode: 'text',
-                  }}
+                    onSubmitEditing(e) {
+                      handleSubmit();
+                    }}}
                   isPassword
                   error={touched.password && errors.password}
                   leftIcon={

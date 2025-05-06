@@ -25,7 +25,7 @@ export interface IUser extends Document {
   matchPassword(enteredPassword: string): Promise<boolean>;
   resetPasswordToken: string | null;
   resetPasswordExpiry: number | null;
-  profilePic?: string | Buffer;
+  profilePic?: string;
   socialData?: any;
   gender?: string;
   phone?: string;

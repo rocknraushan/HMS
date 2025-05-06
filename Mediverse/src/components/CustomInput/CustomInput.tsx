@@ -16,6 +16,8 @@ interface CustomInputProps {
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
   onActionPress?: () => void;
+  label?: string;
+  labelStyle?: StyleProp<TextStyle>;
 }
 
 const CustomInput: React.FC<CustomInputProps> = ({
@@ -29,11 +31,14 @@ const CustomInput: React.FC<CustomInputProps> = ({
   isPassword,
   leftIcon,
   rightIcon,
-  onActionPress
+  onActionPress,
+  label,
+  labelStyle
 }) => {
   const [hide, setHide] = useState(true);
   return (
     <Animated.View style={[styles.containor, containerStyle]}>
+      {label && <Text style={[styles.labelStyleBase, labelStyle]}>{label}</Text>}
       <View style={[styles.inputWraper, error && styles.errorInput]}>
         {leftIcon}
         <TextInput
@@ -62,6 +67,11 @@ const CustomInput: React.FC<CustomInputProps> = ({
 };
 
 const styles = StyleSheet.create({
+  labelStyleBase: {
+    fontSize: 16,
+    color: "#000",
+    marginBottom: 5,
+  },
   containor: {
     width: '100%',
     marginBottom: 8

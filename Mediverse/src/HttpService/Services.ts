@@ -6,6 +6,7 @@ const Services = {
   FORGOT_PASSWORD: "api/auth/forget-password",
   CHANGE_PASSWORD: "api/auth/change-password",
   VERIFY_OTP: "api/auth/verify-otp",
+  PROFILE_PIC:"api/auth/profile-pic",
   ROLE: {
     PATIENT: "patient",
     DOCTOR: "doctor",

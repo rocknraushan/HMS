@@ -2,14 +2,21 @@ import { Button, Pressable, StyleSheet, Text, View } from 'react-native'
 import React, { memo, useState } from 'react'
 import VectorIcons, { IconSets } from '../../../components/Icons/VectorIcons'
 import StyledDropdown from '../../../components/Dropdown/StyledDropdown'
-import { FormikProps } from 'formik'
+import { Formik, FormikHelpers, FormikProps } from 'formik'
 import DocumentPicker from 'react-native-document-picker';
 import CustomInput from '../../../components/CustomInput/CustomInput';
 import RNDateTimePicker from '@react-native-community/datetimepicker'
+import CustomDatePicker from '../../../components/customDatePicker/CustomDatePicker'
+import PromiseButton from '../../../components/CustomButton/PromiseButton'
+import PhoneInput from './PhoneInput'
+import ProfilePicUploader from './ProfilePicUploader'
+import { callProfileUpdateApi, profileValidation } from '../ProfileFunctions'
+import Toast from 'react-native-toast-message'
+import { patientVal } from './ProfileVal'
 
 type Props = {
-  formikRef: FormikProps<any> | null;
-
+data:any;
+navigation: any;
 }
 
 const bloodGroups = [
@@ -23,19 +30,19 @@ const bloodGroups = [
   { label: 'O-', value: 'O-' },
 ];
 
-const PatientForm: React.FC<Props> = ({ formikRef }) => {
-  const { handleChange, handleBlur, handleSubmit, setFieldValue, values, touched, errors } = formikRef as FormikProps<any>;
-  const [showDatePicker, setShowDatePicker] = useState(false);
+const PatientForm: React.FC<Props> = ({data,navigation}) => {
+  
+  const formikRef = React.useRef<FormikProps<any>>(null);
 
-  const handleDobChange = (event: any, selectedDate: any) => {
-    const currentDate = selectedDate || new Date();
-    setShowDatePicker(false);
-    setFieldValue(
-      'dob',
-      currentDate.toLocaleDateString(),
-    );
-    const age = new Date().getFullYear() - currentDate.getFullYear();
-    setFieldValue('age', String(age));
+  const [verificationError, setVerificationError] = useState<string | null>(
+    null,
+  );
+  const [resendError, setResendError] = useState<string | null>(null);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const handleDobChange = (selectedDate: any) => {
+    const age = new Date().getFullYear() - new Date(selectedDate).getFullYear();
+    formikRef.current?.setFieldValue('age', String(age));
   }
   const handleDocumentPick = async () => {
     try {
@@ -49,7 +56,7 @@ const PatientForm: React.FC<Props> = ({ formikRef }) => {
         url: doc.uri,
       }));
 
-      setFieldValue("documents", [...values.documents, ...formattedDocs]);
+      formikRef.current?.setFieldValue("documents", [...formikRef.current?.values.documents, ...formattedDocs]);
     } catch (err) {
       if (DocumentPicker.isCancel(err)) {
         console.log('User cancelled document picker');
@@ -58,108 +65,236 @@ const PatientForm: React.FC<Props> = ({ formikRef }) => {
       }
     }
   };
+  const updateProfile = async (
+    values: any,
+    formikHelpers: FormikHelpers<any>
+  ) => {
+    try {
+      console.log('Form values:', values);
+      const formData = new FormData();
 
+      Object.keys(values).forEach((key) => {
+        if (key === 'profilePic' && 'uri' in values.profilePic && values.profilePic.uri) {
+          formData.append('profilePic', {
+            uri: 'uri' in values.profilePic ? values.profilePic.uri : '',
+            type: values.profilePic.type || 'image/jpeg',
+            name: 'name' in values.profilePic ? values.profilePic.name : 'profile.jpg',
+          });
+        } else if (values[key as typeof values] !== undefined) {
+          formData.append(key, String(values[key as keyof typeof values]));
+        }
+      });
+      await callProfileUpdateApi(formData, navigation)
+    } catch (error: any) {
+      console.log('Error:', error?.response?.data || error.message);
+    }
+  };
+
+  const handleVerify = () => { };
+  const handleOtpSubmit = (otp: string) => {
+    console.log('OTP submitted:', otp);
+    if (otp != '1234' || otp.length < 4) {
+      setVerificationError('Invalid OTP');
+      return;
+    }
+    setVerificationError(null);
+    setIsVerified(true);
+  };
+
+  const handleResend = () => {
+    setResendLoading(true);
+    if (formikRef.current?.values)
+      console.log('🔁 Resending OTP to', formikRef.current.values.phone);
+    setTimeout(() => {
+      setResendLoading(false);
+      Toast.show({
+        type: 'success',
+        text1: 'OTP Resent',
+        text2: `OTP has been resent to ${formikRef?.current?.values.phone}`,
+      });
+    }, 1000);
+  };
   return (
-    <View>
-      <StyledDropdown
-        data={bloodGroups}
-        placeholder="Blood Group"
-        value={values.bloodGroup}
-        onChangeText={handleChange('bloodGroup')}
-        error={touched.bloodGroup && errors.bloodGroup}
-        style={styles.fieldMargin}
-      />
-      <Pressable onPress={() => setShowDatePicker(true)}>
-        <CustomInput
-          placeholder="Date of Birth"
-          value={values.dob}
-          onChangeText={handleChange('dob')}
-          error={touched.dob && errors.dob}
-          extra={{
-            keyboardType: 'numeric',
-            inputMode: 'numeric',
-            editable: false,
-          }}
-          leftIcon={
-            <VectorIcons
-              name="calendar"
-              size={20}
-              color="#9CA3AF"
-              iconSet={IconSets.MaterialCommunityIcons}
-            />
-          }
-          containerStyle={styles.fieldMargin}
-        />
-      </Pressable>
-      <CustomInput
-        placeholder="Age"
-        value={values.age}
-        onChangeText={handleChange('age')}
-        error={touched.age && errors.age}
-        extra={{
-          keyboardType: 'numeric',
-          inputMode: 'numeric',
-          editable: false,
-        }}
-        leftIcon={
-          <VectorIcons
-            name="cake"
-            size={20}
-            color="#9CA3AF"
-            iconSet={IconSets.MaterialIcons}
+    <Formik
+      initialValues={patientVal}
+      innerRef={formikRef}
+      validationSchema={profileValidation}
+      enableReinitialize
+      onSubmit={updateProfile}>
+      {({
+        handleChange,
+        handleBlur,
+        handleSubmit,
+        values,
+        errors,
+        isSubmitting,
+        touched,
+        setFieldValue
+      }) => (
+        <>
+          <ProfilePicUploader
+            onSelect={(e) => setFieldValue('profilePic', e)}
+            image={
+              values.profilePic && 'data' in values.profilePic
+                ? values.profilePic
+                : values.profilePic?.uri || ''
+            }
           />
-        }
-        containerStyle={styles.fieldMargin}
-      />
-      <CustomInput
-        placeholder="Address"
-        value={values.address}
-        onChangeText={handleChange('address')}
-        extra={{
-          onBlur: handleBlur('address'),
-          multiline: true,
-        }}
-        error={touched.address && errors.address}
-        containerStyle={{ marginBottom: 12 }}
-        leftIcon={
-          <VectorIcons
-            name="location-on"
-            size={20}
-            color="#9CA3AF"
-            iconSet={IconSets.MaterialIcons}
+          <CustomInput
+            placeholder="Full Name"
+            value={values.name}
+            onChangeText={handleChange('name')}
+            error={touched.name && errors.name}
+            containerStyle={styles.fieldMargin}
+            leftIcon={
+              <VectorIcons
+                name="person"
+                size={20}
+                color="#9CA3AF"
+                iconSet={IconSets.MaterialIcons}
+              />
+            }
           />
-        }
-      />
+          <PhoneInput
+            value={values.phone}
+            onChange={handleChange('phone')}
+            onVerify={handleVerify}
+            onResend={handleResend}
+            error={touched.phone && errors.phone}
+            verificationError={verificationError}
+            resendError={resendError}
+            resendLoading={resendLoading}
+            isVerified={isVerified}
+            onSubmitOtp={handleOtpSubmit}
+          />
+          <StyledDropdown
+            data={[
+              { label: 'A+', value: 'A+' },
+              { label: 'B+', value: 'B+' },
+              { label: 'O+', value: 'O+' },
+              { label: 'A-', value: 'A-' },
+              { label: 'B-', value: 'B-' },
+              { label: 'O-', value: 'O-' },
+              { label: 'AB+', value: 'AB+' },
+              { label: 'AB-', value: 'AB-' }
+            ]}
+            placeholder="Blood Group"
+            value={values.bloodGroup}
+            onChangeText={handleChange('bloodGroup')}
+            error={touched.bloodGroup && errors.bloodGroup}
+            style={styles.fieldMargin}
+          />
+          <StyledDropdown
+            data={[
+              { label: 'Male', value: 'male' },
+              { label: 'Female', value: 'female' },
+              { label: 'Other', value: 'other' },
+            ]}
+            placeholder="Gender"
+            value={values.gender}
+            onChangeText={handleChange('gender')}
+            style={styles.fieldMargin}
+            error={touched.gender && errors.gender}
+          />
+          <CustomInput
+            placeholder="Email"
+            value={values.email}
+            onChangeText={handleChange('email')}
+            error={touched.email && errors.email}
+            extra={{
+              keyboardType: 'email-address',
+              inputMode: 'email',
+              editable: false
+            }}
+            leftIcon={
+              <VectorIcons
+                name="email"
+                size={20}
+                color="#9CA3AF"
+                iconSet={IconSets.MaterialCommunityIcons}
+              />
+            }
+            containerStyle={styles.fieldMargin}
+          />
 
-      <Button title="Upload Document(s)" onPress={handleDocumentPick} />
-      {values.documents.length > 0 && (
-        <View style={{ marginTop: 10 }}>
-          <Text>Selected Documents:</Text>
-          {values.documents.map((doc: any, idx: number) => (
-            <Text key={idx} style={{ fontSize: 12 }}>
-              • {doc.title}
-            </Text>
-          ))}
-        </View>
+
+          <View>
+            <StyledDropdown
+              data={bloodGroups}
+              placeholder="Blood Group"
+              value={values.bloodGroup}
+              onChangeText={handleChange('bloodGroup')}
+              error={touched.bloodGroup && errors.bloodGroup}
+              style={styles.fieldMargin}
+            />
+            <CustomDatePicker
+              handleChange={handleChange('dob')}
+              onDateChange={handleDobChange}
+              value={values.dob}
+              error={touched.dob && errors.dob}
+            />
+            <CustomInput
+              placeholder="Age"
+              value={values.age}
+              onChangeText={handleChange('age')}
+              error={touched.age && errors.age}
+              extra={{
+                keyboardType: 'numeric',
+                inputMode: 'numeric',
+                editable: false,
+              }}
+              leftIcon={
+                <VectorIcons
+                  name="cake"
+                  size={20}
+                  color="#9CA3AF"
+                  iconSet={IconSets.MaterialIcons}
+                />
+              }
+              containerStyle={styles.fieldMargin}
+            />
+            <CustomInput
+              placeholder="Address"
+              value={values.address}
+              onChangeText={handleChange('address')}
+              extra={{
+                onBlur: handleBlur('address'),
+                multiline: true,
+              }}
+              error={touched.address && errors.address}
+              containerStyle={{ marginBottom: 12 }}
+              leftIcon={
+                <VectorIcons
+                  name="location-on"
+                  size={20}
+                  color="#9CA3AF"
+                  iconSet={IconSets.MaterialIcons}
+                />
+              }
+            />
+
+            <Button title="Upload Document(s)" onPress={handleDocumentPick} />
+            {values.documents.length > 0 && (
+              <View style={{ marginTop: 10 }}>
+                <Text>Selected Documents:</Text>
+                {values.documents.map((doc: any, idx: number) => (
+                  <Text key={idx} style={{ fontSize: 12 }}>
+                    • {doc.title}
+                  </Text>
+                ))}
+              </View>
+            )}
+          </View>
+          <PromiseButton
+            onPress={handleSubmit}
+            text="Login"
+            loading={isSubmitting}
+            style={styles.fieldMargin}
+          />
+        </>
       )}
-      {showDatePicker && (
-        <RNDateTimePicker
-          testID="dateTimePicker"
-          value={new Date()}
-          mode="date"
-          is24Hour={true}
-          // minimumDate={new Date()}
-          maximumDate={
-            new Date(new Date().setFullYear(new Date().getFullYear() - 18))
-          }
-          onTouchCancel={() => setShowDatePicker(false)}
-          onTouchEnd={() => setShowDatePicker(false)}
-          themeVariant="light"
-          display="default"
-          onChange={handleDobChange}
-        />
-      )}
-    </View>
+    </Formik>
+
   )
 }
 

@@ -20,9 +20,10 @@ export const uploadMiddleware = apkUpload.single('apkFile');
 const upload = multer({ 
     
     storage: multer.memoryStorage(),
-    limits: { fileSize: 20 * 1024 * 1024 }, // 5 MB);
+    limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB
     fileFilter: (req, file, cb) => {
         const ext = path.extname(file.originalname).toLowerCase();
+        console.log(path,ext,"extname(file.originalname),file.originalname)")
         if (ext !== '.jpg' && ext !== '.jpeg' && ext !== '.png') {
             return cb(new Error('Only .jpg, .jpeg and .png files are allowed!'));
         }

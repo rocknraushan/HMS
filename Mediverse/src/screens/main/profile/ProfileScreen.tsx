@@ -5,7 +5,7 @@ import { BellIcon, EditIcon, EditProfileIcon, HeartIcon, HelpIcon, LogoutIcon, S
 import { Icons } from '../../../assets/icons';
 import { CommonActions, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../../navigation/navStrings';
-import { fetchProfile } from '../../profile/ProfileFunctions';
+import { fetchProfile, updateProfilePic } from '../../profile/ProfileFunctions';
 import FastImage from 'react-native-fast-image';
 import Kechain from 'react-native-keychain';
 import LogoutBottomSheet from './components/LogoutBottomSheet';
@@ -27,7 +27,6 @@ const ProfileScreen = ({ navigation }: Props) => {
     try {
       const userData = await fetchProfile();
       setProfileData(userData.profile);
-      console.log(userData.profile);
     } catch (error) {
       console.error("Error fetching profile data:", error);
     }
@@ -72,7 +71,7 @@ const ProfileScreen = ({ navigation }: Props) => {
         </TouchableOpacity> */}
 
         <ProfilePicUploader
-          onSelect={(e) => console.log('profilePic', e)}
+          onSelect={(e) =>updateProfilePic(e)}
           image={profileData?.profilePic}
         />
 

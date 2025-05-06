@@ -27,90 +27,20 @@ import { callProfileUpdateApi, fetchProfile, profileValidation } from './Profile
 import SuccessModal from '../../components/loaders/SuccessModal';
 import PatientForm from './components/PatientForm';
 import DoctorForm from './components/DoctorForm';
-import { getInitialValues } from './components/ProfileVal';
 import { bufferToImageUrl, BufferType } from '../../utils/commonFunction';
+import CustomDatePicker from '../../components/customDatePicker/CustomDatePicker';
 
 type Props = {
   navigation: NavigationProp<RootStackParamList, 'UserProfileForm'>;
 };
-type ProfilePicType = { uri: string; type: string; name: string } | BufferType;
-const initialValues = {
-  name: '',
-  age: '',
-  bloodGroup: '',
-  phone: '',
-  profilePic: {
-    uri: '',
-    type: '',
-    name: '',
-  } as { uri: string; type: string; name: string } | BufferType,
-  gender: '',
-  email: '',
-  dob: '',
-};
+
 const UserProfileForm = (props: Props) => {
-  const [initVal, setInitVal] = useState(getInitialValues())
-  const [profiledata, setProfiledata] = useState<any>(null);
-  const formikRef = React.useRef<FormikProps<any>>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false)
-  const [verificationError, setVerificationError] = useState<string | null>(
-    null,
-  );
-  const [resendError, setResendError] = useState<string | null>(null);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
+  const [profiledata, setProfileData] = useState<any>(null)
   const handleBackPress = () => {
     props.navigation.goBack();
   };
-  const updateProfile = async (
-    values: any,
-    formikHelpers: FormikHelpers<any>
-  ) => {
-    try {
-      console.log('Form values:', values);
-      const formData = new FormData();
 
-      Object.keys(values).forEach((key) => {
-        if (key === 'profilePic' && 'uri' in values.profilePic && values.profilePic.uri) {
-          formData.append('profilePic', {
-            uri: 'uri' in values.profilePic ? values.profilePic.uri : '',
-            type: values.profilePic.type || 'image/jpeg',
-            name: 'name' in values.profilePic ? values.profilePic.name : 'profile.jpg',
-          });
-        } else if (values[key as keyof typeof initVal] !== undefined) {
-          formData.append(key, String(values[key as keyof typeof initVal]));
-        }
-      });
-      await callProfileUpdateApi(formData, props.navigation)
-    } catch (error: any) {
-      console.log('Error:', error?.response?.data || error.message);
-    }
-  };
-
-  const handleVerify = () => { };
-  const handleOtpSubmit = (otp: string) => {
-    console.log('OTP submitted:', otp);
-    if (otp != '1234' || otp.length < 4) {
-      setVerificationError('Invalid OTP');
-      return;
-    }
-    setVerificationError(null);
-    setIsVerified(true);
-  };
-
-  const handleResend = () => {
-    setResendLoading(true);
-    if (formikRef.current?.values)
-      console.log('🔁 Resending OTP to', formikRef.current.values.phone);
-    setTimeout(() => {
-      setResendLoading(false);
-      Alert.alert(
-        'OTP Resent',
-        `OTP has been resent to ${formikRef?.current?.values.phone}`,
-      );
-    }, 1500);
-  };
 
   async function getProfileData() {
     try {
@@ -118,36 +48,14 @@ const UserProfileForm = (props: Props) => {
       if (data.profile) {
         const { profile } = data
         console.log(profile, "data prof")
-        const initValues = {
-          name: profile.name || "",
-          age: profile.age || '',
-          bloodGroup: profile.bloodGroup || '',
-          phone: profile.phone || '',
-          profilePic: { uri: profile.profilePic || '', type: '', name: '' },
-          gender: profile.gender || '',
-          email: profile.email || '',
-          dob: profile.dob || '',
-        };
-        setInitVal({
-          ...initVal,
-          ...initValues,
-        });
+        setProfileData(profile)
       }
     } catch (error) {
 
     }
   }
 
-  const handleDobChange = (event: any, selectedDate: any) => {
-    const currentDate = selectedDate || new Date();
-    setShowDatePicker(false);
-    formikRef.current?.setFieldValue(
-      'dob',
-      currentDate.toLocaleDateString(),
-    );
-    const age = new Date().getFullYear() - currentDate.getFullYear();
-    formikRef.current?.setFieldValue('age', String(age));
-  }
+
 
   useEffect(() => {
     getProfileData();
@@ -183,129 +91,12 @@ const UserProfileForm = (props: Props) => {
           automaticallyAdjustKeyboardInsets
           keyboardShouldPersistTaps="handled"
           style={styles.scrollContainer}>
-          <Formik
-            initialValues={getInitialValues()}
-            innerRef={formikRef}
-            validationSchema={profileValidation}
-            enableReinitialize
-            onSubmit={updateProfile}>
-            {({
-              handleChange,
-              handleBlur,
-              handleSubmit,
-              values,
-              errors,
-              isSubmitting,
-              touched,
-              setFieldValue
-            }) => (
-              <>
-                <ProfilePicUploader
-                  onSelect={(e) => setFieldValue('profilePic', e)}
-                  image={
-                    values.profilePic && 'data' in values.profilePic
-                      ? values.profilePic 
-                      : values.profilePic?.uri || ''
-                  }
-                />
-
-
-                <CustomInput
-                  placeholder="Full Name"
-                  value={values.name}
-                  onChangeText={handleChange('name')}
-                  error={touched.name && errors.name}
-                  containerStyle={styles.fieldMargin}
-                  leftIcon={
-                    <VectorIcons
-                      name="person"
-                      size={20}
-                      color="#9CA3AF"
-                      iconSet={IconSets.MaterialIcons}
-                    />
-                  }
-                />
-                <PhoneInput
-                  value={values.phone}
-                  onChange={handleChange('phone')}
-                  onVerify={handleVerify}
-                  onResend={handleResend}
-                  error={touched.phone && errors.phone}
-                  verificationError={verificationError}
-                  resendError={resendError}
-                  resendLoading={resendLoading}
-                  isVerified={isVerified}
-                  onSubmitOtp={handleOtpSubmit}
-                />
-                <StyledDropdown
-                  data={[
-                    { label: 'A+', value: 'A+' },
-                    { label: 'B+', value: 'B+' },
-                    { label: 'O+', value: 'O+' },
-                    { label: 'A-', value: 'A-' },
-                    { label: 'B-', value: 'B-' },
-                    { label: 'O-', value: 'O-' },
-                    { label: 'AB+', value: 'AB+' },
-                    { label: 'AB-', value: 'AB-' }
-                  ]}
-                  placeholder="Blood Group"
-                  value={values.bloodGroup}
-                  onChangeText={handleChange('bloodGroup')}
-                  error={touched.bloodGroup && errors.bloodGroup}
-                  style={styles.fieldMargin}
-                />
-                <StyledDropdown
-                  data={[
-                    { label: 'Male', value: 'male' },
-                    { label: 'Female', value: 'female' },
-                    { label: 'Other', value: 'other' },
-                  ]}
-                  placeholder="Gender"
-                  value={values.gender}
-                  onChangeText={handleChange('gender')}
-                  style={styles.fieldMargin}
-                  error={touched.gender && errors.gender}
-                />
-                <CustomInput
-                  placeholder="Email"
-                  value={values.email}
-                  onChangeText={handleChange('email')}
-                  error={touched.email && errors.email}
-                  extra={{
-                    keyboardType: 'email-address',
-                    inputMode: 'email',
-                    editable: false
-                  }}
-                  leftIcon={
-                    <VectorIcons
-                      name="email"
-                      size={20}
-                      color="#9CA3AF"
-                      iconSet={IconSets.MaterialCommunityIcons}
-                    />
-                  }
-                  containerStyle={styles.fieldMargin}
-                />
-                
-                {
-                  profiledata && profiledata.role ==="patient" && (
-                    <PatientForm formikRef={formikRef?.current} />
-                  )
-                }
-                {
-                  profiledata && profiledata.role ==="doctor" && (
-                    <DoctorForm formikRef={formikRef?.current} />
-                  )
-                }
-                <PromiseButton
-                  onPress={handleSubmit}
-                  text="Login"
-                  loading={isSubmitting}
-                  style={styles.fieldMargin}
-                />
-              </>
-            )}
-          </Formik>
+          {
+            profiledata && profiledata.role === "patient" && (
+              <PatientForm data={profiledata} navigation={props.navigation} />
+            )
+          }
+          {profiledata && profiledata.role === "doctor" && (<DoctorForm data={profiledata} navigation={props.navigation} />)}
         </ScrollView>
       </KeyboardAvoidingView>
     </View>

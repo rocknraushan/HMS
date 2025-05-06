@@ -2,7 +2,6 @@ import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, Image, ScrollView, Platform, KeyboardAvoidingView, Modal } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { navStrings, RootStackParamList } from '../../../navigation/navStrings';
-import axios from 'axios';
 import Config from 'react-native-config';
 import getAxiosClient from '../../../HttpService/AxiosClient';
 import { Services } from '../../../HttpService';
@@ -12,7 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Keychain from 'react-native-keychain';
 import ChooseRoleScreen from '../welcome/ChooseRoleScreen';
 import StyledDropdown from '../../../components/Dropdown/StyledDropdown';
-import { Formik, FormikHandlers, FormikProps } from 'formik';
+import { Formik, FormikProps } from 'formik';
 import GenericLoader from '../../../components/loaders/GenericLoader';
 import Toast from 'react-native-toast-message';
 
@@ -70,14 +69,14 @@ const SignupScreen = (props: Props) => {
       }
 
       if (error?.response?.status == 400) {
-       Toast.show({
+        Toast.show({
           type: 'error',
           text1: 'Error',
           text2: error?.response?.data?.message || 'Something went wrong'
-       })
+        })
       }
     }
-    finally{
+    finally {
       setLoading(false)
     }
   };
