@@ -29,6 +29,7 @@ import PatientForm from './components/PatientForm';
 import DoctorForm from './components/DoctorForm';
 import { bufferToImageUrl, BufferType } from '../../utils/commonFunction';
 import CustomDatePicker from '../../components/customDatePicker/CustomDatePicker';
+import ProfileSkeletonLoader from '../../components/SkeletonLoader/ProfileSkeletonLoader';
 
 type Props = {
   navigation: NavigationProp<RootStackParamList, 'UserProfileForm'>;
@@ -51,7 +52,7 @@ const UserProfileForm = (props: Props) => {
         setProfileData(profile)
       }
     } catch (error) {
-
+      console.log("Failed to fetch profile", error);
     }
   }
 
@@ -59,6 +60,7 @@ const UserProfileForm = (props: Props) => {
 
   useEffect(() => {
     getProfileData();
+    
   }, [])
   return (
     <View style={styles.flex}>
@@ -84,20 +86,26 @@ const UserProfileForm = (props: Props) => {
       </SafeAreaView>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}>
+        style={{ flex: 1 ,backgroundColor:'#fff'}}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
           automaticallyAdjustKeyboardInsets
           keyboardShouldPersistTaps="handled"
           style={styles.scrollContainer}>
-          {
-            profiledata && profiledata.role === "patient" && (
-              <PatientForm data={profiledata} navigation={props.navigation} />
-            )
-          }
-          {profiledata && profiledata.role === "doctor" && (<DoctorForm data={profiledata} navigation={props.navigation} />)}
+
+          {!profiledata && 
+          <ProfileSkeletonLoader />
+           }
+
+          {profiledata?.role === 'patient' && (
+            <PatientForm data={profiledata} navigation={props.navigation} />
+          )}
+          {profiledata?.role === 'doctor' && (
+            <DoctorForm data={profiledata} navigation={props.navigation} />
+          )}
         </ScrollView>
+
       </KeyboardAvoidingView>
     </View>
   );
@@ -109,6 +117,7 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
     paddingHorizontal: 20,
+    backgroundColor:'#fff'
   },
   profileText: {
     fontSize: 20,
@@ -120,6 +129,7 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
+    backgroundColor:'#fff'
   },
   container: {
     flexDirection: 'row',

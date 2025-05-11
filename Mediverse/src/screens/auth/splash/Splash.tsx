@@ -19,41 +19,80 @@ interface Props {
 const Splash = ({ navigation }: Props) => {
   const scale = useSharedValue(0);
 
+
+
+  const decodeJWT = (token: string) => {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) throw new Error('Invalid JWT format');
+  
+      const base64Url = parts[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
+  
+      const decoded = Buffer.from(padded, 'base64').toString('utf8');
+      return JSON.parse(decoded);
+    } catch (err) {
+      console.error('Failed to decode JWT:', err);
+      return null;
+    }
+  };
+  
+  
+
   useEffect(() => {
     const checkLoginState = async () => {
       try {
-         const user = await Keychain.getGenericPassword();
-        const isLoggedIn = user
-
+        const user = await Keychain.getGenericPassword();
+        const isLoggedIn = !!user;
+    
         if (isLoggedIn) {
-          const {role} = JSON.parse(user.password);
-          switch (role) {
+          const parsed = JSON.parse(user.password);
+          const token = parsed.token;
+    
+          const payload = decodeJWT(token);
+          if (!payload || !payload.role) {
+            throw new Error('Invalid token payload or missing role');
+          }
+    
+          console.log('Decoded Token Payload:', payload);
+    
+          switch (payload.role) {
             case Services.ROLE.DOCTOR:
               navigation.reset({
                 index: 0,
-                routes: [{ name:"DoctorTab" }],
-              })
+                routes: [{ name: 'DoctorTab' }],
+              });
               break;
             case Services.ROLE.PATIENT:
               navigation.reset({
                 index: 0,
-                routes: [{ name:"BOTTOMTAB" }],
-              })
+                routes: [{ name: 'BOTTOMTAB' }],
+              });
               break;
-          
             default:
+              console.warn('Unknown role, redirecting to welcome');
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'WELCOME' }],
+              });
               break;
           }
         } else {
           navigation.reset({
             index: 0,
-            routes: [{ name:"WELCOME" }],
-          })
+            routes: [{ name: 'WELCOME' }],
+          });
         }
       } catch (error) {
         console.error('Error checking login state:', error);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'WELCOME' }],
+        });
       }
     };
+  
     scale.value = withTiming(1, { duration: 2000 }, () => {
       runOnJS(checkLoginState)();
     });

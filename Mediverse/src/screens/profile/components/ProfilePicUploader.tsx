@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import ImageCropPicker from 'react-native-image-crop-picker';
 import VectorIcons, { IconSets } from '../../../components/Icons/VectorIcons';
 import { Icons } from '../../../assets/icons';
@@ -12,6 +12,7 @@ interface BufferImage {
 interface Props {
   onSelect?: (e: { uri: string; type: string; name: string }) => void;
   image?: string | BufferImage;
+  onImgPress?: () => void;
 }
 
 const isBuffer = (img: any): img is BufferImage =>
@@ -20,7 +21,7 @@ const isBuffer = (img: any): img is BufferImage =>
 const bufferToUrl = (buffer: BufferImage): string =>
   String.fromCharCode(...buffer.data);
 
-const ProfilePicUploader: React.FC<Props> = ({ image, onSelect }) => {
+const ProfilePicUploader: React.FC<Props> = ({ image, onSelect,onImgPress }) => {
   const [imageUri, setImageUri] = useState<string | null>(null);
 
   // console.log("image", image);
@@ -59,15 +60,18 @@ const ProfilePicUploader: React.FC<Props> = ({ image, onSelect }) => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={chooseImage} style={styles.profileContainer}>
+      <TouchableOpacity onPress={onImgPress} style={styles.profileContainer}>
         <Image source={profileImage} style={styles.profileImage} />
         <View style={styles.editIcon}>
+          <TouchableWithoutFeedback onPress={chooseImage}>
           <VectorIcons
             name="edit"
             size={20}
             color="#fff"
             iconSet={IconSets.MaterialIcons}
           />
+          </TouchableWithoutFeedback>
+
         </View>
       </TouchableOpacity>
     </View>
