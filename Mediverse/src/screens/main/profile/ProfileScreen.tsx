@@ -11,13 +11,15 @@ import Kechain from 'react-native-keychain';
 import LogoutBottomSheet from './components/LogoutBottomSheet';
 import ProfilePicUploader from '../../profile/components/ProfilePicUploader';
 import StorageProvider from '../../../storage/Storage';
+import FullScreenImageViewer from '../../../components/ImageViewer/FullScreenImageViewer';
 
 interface Props {
-  navigation: NavigationProp<RootStackParamList, "PROFILE_HOME">;
+  navigation: NavigationProp<RootStackParamList, "ProfileScreen">;
 }
 const ProfileScreen = ({ navigation }: Props) => {
   const [profileData, setProfileData] = useState<any>(undefined)
   const [showLogout, setShowLogout] = useState(false);
+  const [showFullImage, setshowFullImage] = useState(false);
   const handleNavigation = (screen: keyof RootStackParamList) => {
     navigation.navigate(screen as any); // Adjust the type as per your navigation setup
   }
@@ -35,7 +37,7 @@ const ProfileScreen = ({ navigation }: Props) => {
   const logout = () => {
     // Handle logout logic here
     Kechain.resetGenericPassword()
-      .then(async() => {
+      .then(async () => {
         console.log('Credentials reset successfully!');
 
         await StorageProvider.clearStorage();
@@ -71,8 +73,11 @@ const ProfileScreen = ({ navigation }: Props) => {
         </TouchableOpacity> */}
 
         <ProfilePicUploader
-          onSelect={(e) =>updateProfilePic(e)}
+          onSelect={(e) => updateProfilePic(e)}
           image={profileData?.profilePic}
+          onImgPress={() => {
+            setshowFullImage(true);
+          }}
         />
 
         <Text style={styles.name}>{profileData?.name}</Text>
@@ -84,7 +89,7 @@ const ProfileScreen = ({ navigation }: Props) => {
           <IconWithTextRow icon={<BellIcon />} label="Notifications" />
           <IconWithTextRow icon={<SettingsIcon />} label="Settings" />
           <IconWithTextRow icon={<TermsIcon />} label="Help and Support" />
-          <IconWithTextRow icon={<HelpIcon />} label="Terms and Conditions" onPress={()=>navigation.navigate('TermsScreen')} />
+          <IconWithTextRow icon={<HelpIcon />} label="Terms and Conditions" onPress={() => navigation.navigate('TermsScreen')} />
           <IconWithTextRow icon={<LogoutIcon />} label="Log Out" onPress={() => setShowLogout(true)} />
         </View>
       </ScrollView>
@@ -97,6 +102,17 @@ const ProfileScreen = ({ navigation }: Props) => {
           // handle logout
         }}
       />
+      <FullScreenImageViewer
+        visible={showFullImage}
+        onClose={() => setshowFullImage(false)}
+        onEdit={(editedImg) => {
+          console.log('Edited Image:', editedImg);
+          // Save to backend or update local state
+        }}
+        image={profileData?.profilePic} // string or Buffer
+        enableEdit={true}
+      />
+
     </View>
   );
 };

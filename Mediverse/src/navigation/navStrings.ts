@@ -18,7 +18,10 @@ export type RootStackParamList = {
   UserProfileForm: undefined;
   DoctorTab: undefined;
   TermsScreen:undefined;
-  PROFILE_HOME: undefined;
+  DoctorDetail: undefined;
+  ProfileScreen: undefined;
+  MyBookings: undefined;
+  BookAppointmentScreen: undefined;
 };
 
 export const navStrings = {

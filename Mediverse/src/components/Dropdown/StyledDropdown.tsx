@@ -52,7 +52,7 @@ const StyledDropdown = ({
   const styles = styleSheet(theme);
 
   const selectedValue = useMemo(() => {
-    return data.find(item => item.value === value);
+    return data?.find(item => item?.value === value);
   }, [value, data]);
 
   const onChange = useCallback((item: DropdownType) => {

@@ -142,6 +142,7 @@ const BottomNav = ({ navigation }: Props) => {
         name="NearbyHospitalsMap"
         component={screens.NearbyHospitalsMap}
         options={{
+          
           tabBarIcon: ({ color, size, focused }) => (
             <TabBarIcon
               color={color}
@@ -158,9 +159,10 @@ const BottomNav = ({ navigation }: Props) => {
       />
       <Tab.Screen
         name="Search"
-        component={screens.Search}
+        component={screens.MyBookings}
         options={{
-          title: '',
+          title: 'My Bookings',
+          
           tabBarIcon: ({ color, size, focused }) => (
             <TabBarIcon
               color={color}
