@@ -9,6 +9,7 @@ import { img_4, img_5 } from '../../../assets';
 import { rspH } from '../../../theme/responsive';
 import { apiCalls } from '../../../HttpService/apiCalls';
 import { number } from 'yup';
+import MedicalCenterCardSkeleton from '../../../components/SkeletonLoader/MedicalCenterCardSkeleton';
 
 const centers = [
   { title: 'Sunrise Health Clinic', image: img_4 },
@@ -44,7 +45,6 @@ const HomeScreen = () => {
       <CategoryGrid />
       <View style={[styles.row,{marginBlock:10}]}>
         <Text style={styles.title}>Nearby Medical Centers</Text>
-        <Text style={styles.seeAll}>See All</Text>
       </View>
       <FlatList
         horizontal
@@ -53,6 +53,7 @@ const HomeScreen = () => {
         keyExtractor={(item, index) => index.toString()}
         renderItem={MedicalCenterCard}
         contentContainerStyle={{ paddingRight: 16 }}
+        ListEmptyComponent={MedicalCenterCardSkeleton}
       /> 
       </View>
     </ScrollView>

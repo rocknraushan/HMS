@@ -11,6 +11,7 @@ import ChooseRoleScreen from '../screens/auth/welcome/ChooseRoleScreen';
 import EvaidyaTermsScreen from '../screens/main/profile/EvaidyaTermsScreen';
 import DoctorDetail from '../screens/main/Bookings/DoctorDetail';
 import BookAppointmentScreen from '../screens/main/Bookings/Components/BookAppointmentScreen';
+import DoctorProfileScreen from '../screens/DoctorProfile/DoctorProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,7 +42,7 @@ const StackNav = () => {
       <Stack.Screen name="TermsScreen" component={EvaidyaTermsScreen} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true, statusBarTranslucent:true }} />
       <Stack.Screen name="DoctorDetail" component={DoctorDetail} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true, statusBarTranslucent:true }} />
       <Stack.Screen name="BookAppointmentScreen" component={BookAppointmentScreen} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true, statusBarTranslucent:true }} />
-
+      <Stack.Screen component={DoctorProfileScreen} name='DoctorProfileScreen' options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true, statusBarTranslucent:false,statusBarBackgroundColor:"#fff" }} />
     </Stack.Navigator>
   );
 };

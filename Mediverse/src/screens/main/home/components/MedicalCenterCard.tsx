@@ -18,7 +18,6 @@ export interface MedicalCenterCardProps {
     reviewCount: number;
     distance: string;
     duration: string;
-    type: string;
     user: {
       gender: string;
       phone: string;
@@ -41,7 +40,6 @@ const MedicalCenterCard = ({ item, index }: any) => {
     reviewCount,
     distance,
     duration,
-    type,
     isFavorite = false,
     onPressFavorite = () => { },
     user
@@ -80,12 +78,12 @@ const MedicalCenterCard = ({ item, index }: any) => {
         <View style={styles.rowSpaceBetween}>
           <View style={styles.row}>
             <MaterialIcons name="directions-walk" size={16} color="#666" />
-            <Text style={styles.distance}>{distance}/{duration}</Text>
+            <Text style={styles.distance}>{(distance/1000)}KM</Text>
           </View>
 
           <View style={styles.row}>
             <MaterialIcons name="local-hospital" size={16} color="#666" />
-            <Text style={styles.hospital}>{type}</Text>
+            <Text style={styles.hospital}>Hospital</Text>
           </View>
         </View>
       </View>
@@ -102,7 +100,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     elevation: 3,
     margin: 10,
-    width: 150,
+    width: 200,
   },
   image: {
     height: 150,

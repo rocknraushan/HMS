@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, Animated, StyleProp } from 'react-native';
+import { View, StyleSheet, Animated, StyleProp, ViewStyle } from 'react-native';
 import { rspH, rspW } from '../../theme/responsive';
-import { ViewStyle } from 'react-native-size-matters';
 
 // Custom skeleton loader that doesn't rely on external libraries
 const ProfileSkeletonLoader = () => {

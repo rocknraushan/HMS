@@ -3,47 +3,87 @@ import Doctor, { IDoctor } from '../models/doctor';
 import { AuthRequest } from 'index';
 
 export const getDoctors = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const doctors = await Doctor.find();
-        res.status(200).json(doctors);
-    } catch (error) {
-        res.status(500).json({ message: (error as Error).message });
-    }
+  try {
+    const doctors = await Doctor.find();
+    res.status(200).json(doctors);
+  } catch (error) {
+    res.status(500).json({ message: (error as Error).message });
+  }
 };
 
 
 
 // GET /api/doctors/nearby?lat=xx&lng=yy or ?pincode=xxxxxx
-export const getNearbyDoctors= async (req:AuthRequest, res:Response):Promise<any>=> {
+export const getNearbyDoctors = async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     const { lat, lng, pincode } = req.query;
 
-    let doctors = [];
+    let doctors: any[] = [];
 
     if (lat && lng) {
       const latitude = parseFloat(lat as string);
       const longitude = parseFloat(lng as string);
 
-      doctors = await Doctor.find({
-        isAvailable: true,
-        'location': {
-          $near: {
-            $geometry: {
+      doctors = await Doctor.aggregate([
+        {
+          $geoNear: {
+            near: {
               type: 'Point',
               coordinates: [longitude, latitude],
             },
-            $maxDistance: 10000, // 10 km range
+            distanceField: 'distance',
+            key: 'location', // 👈 specify the field that has the 2dsphere index
+            spherical: true,
+            maxDistance: 10000,
+            query: { isAvailable: true },
+          },
+
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user',
+            foreignField: '_id',
+            as: 'user',
           },
         },
-      }).populate({
-        path: 'user',
-        select: 'name profilePic gender phone email _id ',
-      });
+        {
+          $unwind: '$user',
+        },
+        {
+          $project: {
+            distance: 1,
+            isAvailable: 1,
+            location: 1,
+            rating: 1,
+            clinicAddress: 1,
+            specialization: 1,
+            workingHours: 1,
+            homeVisit: 1,
+            bio: 1,
+            experience: 1,
+            licenseNumber: 1,
+            education: 1,
+            verified: 1,
+            user: {
+              _id: 1,
+              name: 1,
+              profilePic: 1,
+              gender: 1,
+              phone: 1,
+              email: 1,
+            },
+          },
+        },
+      ]);
     } else if (pincode) {
       doctors = await Doctor.find({
         isAvailable: true,
         'clinicAddress.pincode': pincode,
-      }).populate('user');
+      }).populate({
+        path: 'user',
+        select: 'name profilePic gender phone email _id',
+      });
     } else {
       return res.status(400).json({ message: 'Provide lat/lng or pincode' });
     }
@@ -53,7 +93,7 @@ export const getNearbyDoctors= async (req:AuthRequest, res:Response):Promise<any
     console.error(error);
     return res.status(500).json({ message: 'Server Error' });
   }
-}
+};
 
 
 export const addDoctorProfile = async (req: AuthRequest, res: Response) => {
