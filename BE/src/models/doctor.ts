@@ -18,6 +18,9 @@ export interface IDoctor extends Document {
   verified?: boolean;
   rating?: number;
   homeVisit?: boolean;
+  clinicName?: string;
+  clinicPhone?: string;
+  coverImage?: string;
 }
 
 // Reusable schemas
@@ -83,6 +86,21 @@ const doctorSchema = new Schema<IDoctor>(
     clinicAddress: {
       type: addressSchema,
       default: undefined,
+    },
+    clinicName: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    clinicPhone: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    coverImage: {
+      type: String,
+      required: false,
+      trim: true,
     },
     location: {
       type: locationSchema,

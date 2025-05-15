@@ -26,7 +26,7 @@ export const getNearbyDoctors= async (req:AuthRequest, res:Response):Promise<any
 
       doctors = await Doctor.find({
         isAvailable: true,
-        'clinicAddress.location': {
+        'location': {
           $near: {
             $geometry: {
               type: 'Point',
@@ -35,11 +35,14 @@ export const getNearbyDoctors= async (req:AuthRequest, res:Response):Promise<any
             $maxDistance: 10000, // 10 km range
           },
         },
-      }).populate('user');
+      }).populate({
+        path: 'user',
+        select: 'name profilePic gender phone email _id ',
+      });
     } else if (pincode) {
       doctors = await Doctor.find({
         isAvailable: true,
-        'clinicAddress.address.pincode': pincode,
+        'clinicAddress.pincode': pincode,
       }).populate('user');
     } else {
       return res.status(400).json({ message: 'Provide lat/lng or pincode' });

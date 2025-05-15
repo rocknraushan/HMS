@@ -8,6 +8,7 @@ const Services = {
   VERIFY_OTP: "api/auth/verify-otp",
   PROFILE_PIC:"api/auth/profile-pic",
   LOCATIONuPDATE: "api/auth/update-location",
+  NEARBY_DOCTORS: "api/doctors/nearby",
   ROLE: {
     PATIENT: "patient",
     DOCTOR: "doctor",

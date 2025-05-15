@@ -16,7 +16,7 @@ export interface DropdownType {
 interface DropdownProps {
   error?: any;
   data: DropdownType[];
-  value?: string;
+  value?: any;
   onChangeText?: (val: string) => void;
   dropdownStyle?: StyleProp<ViewStyle>;
   placeholder?: string;

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, StyleProp, ViewStyle } from 'react-native';
 import ImageCropPicker from 'react-native-image-crop-picker';
 import VectorIcons, { IconSets } from '../../../components/Icons/VectorIcons';
 import { Icons } from '../../../assets/icons';
@@ -13,6 +13,7 @@ interface Props {
   onSelect?: (e: { uri: string; type: string; name: string }) => void;
   image?: string | BufferImage;
   onImgPress?: () => void;
+  style?:StyleProp<ViewStyle>;
 }
 
 const isBuffer = (img: any): img is BufferImage =>
@@ -21,7 +22,7 @@ const isBuffer = (img: any): img is BufferImage =>
 const bufferToUrl = (buffer: BufferImage): string =>
   String.fromCharCode(...buffer.data);
 
-const ProfilePicUploader: React.FC<Props> = ({ image, onSelect,onImgPress }) => {
+const ProfilePicUploader: React.FC<Props> = ({ image, onSelect,onImgPress,style }) => {
   const [imageUri, setImageUri] = useState<string | null>(null);
 
   // console.log("image", image);
@@ -59,7 +60,7 @@ const ProfilePicUploader: React.FC<Props> = ({ image, onSelect,onImgPress }) => 
   }, [imageUri]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container,style]}>
       <TouchableOpacity onPress={onImgPress} style={styles.profileContainer}>
         <Image source={profileImage} style={styles.profileImage} />
         <View style={styles.editIcon}>
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 100,
+    borderRadius: 100
   },
   editIcon: {
     position: 'absolute',

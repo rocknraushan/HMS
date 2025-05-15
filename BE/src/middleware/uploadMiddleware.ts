@@ -31,3 +31,9 @@ const upload = multer({
     },
 });
 export const uploadSingleProfilePic = upload.single('profilePic');
+export const uploadMultipleImg = upload.fields([
+    {name:"profilePic", maxCount: 1},
+    {name:"documents", maxCount: 5},
+    {name:"prescriptions", maxCount: 5},
+    {name:"coverImage", maxCount: 1}
+]);

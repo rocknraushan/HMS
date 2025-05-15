@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, InteractionManager, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, InteractionManager, Pressable, ImageBackground } from 'react-native';
 import IconWithTextRow from './components/IconWithTextRow';
 import { BellIcon, EditIcon, EditProfileIcon, HeartIcon, HelpIcon, LogoutIcon, SettingsIcon, TermsIcon } from '../../../assets/icons/svg/SvgIcons';
 import { Icons } from '../../../assets/icons';
@@ -71,8 +71,14 @@ const ProfileScreen = ({ navigation }: Props) => {
             <EditIcon />
           </Pressable>
         </TouchableOpacity> */}
+        <FastImage
+          source={profileData?.coverImage ? { uri: profileData?.coverImage } : Icons.coverImage}
+          style={{ width: '100%', height: 200, borderRadius: 10,position:"absolute",marginTop:80}}
+          resizeMode='cover'
+        />
 
         <ProfilePicUploader
+        style={{ marginTop: 100,backgroundColor:"#fff",borderRadius:1000 }}
           onSelect={(e) => updateProfilePic(e)}
           image={profileData?.profilePic}
           onImgPress={() => {

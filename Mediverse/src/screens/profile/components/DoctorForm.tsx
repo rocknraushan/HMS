@@ -56,6 +56,8 @@ const genderData = [
 export const doctorVal: DoctorFormValues = {
   ...UserVal,
   specialization: '',
+  clinicName: '',
+  clinicPhone: '',
   workingHours: {
     start: '',
     end: ''
@@ -376,6 +378,55 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
               placeholder='End Time'
             />
           </View>
+          <StyledDropdown
+            data={[{ label: "Yes", value: true }, { label: "No", value: false }]}
+            placeholder="Home Visit"
+            label="Home Visit"
+            value={values.homeVisit}
+            onChangeText={handleChange('homeVisit')}
+            leftIcon={
+              <VectorIcons
+                name="home"
+                size={20}
+                color="#9CA3AF"
+                iconSet={IconSets.MaterialIcons}
+                style={{alignSelf: 'center'}}
+                />}
+          />
+          <CustomInput
+            placeholder="Clinic Name"
+            value={values.clinicName}
+            onChangeText={handleChange('clinicName')}
+            error={touched.clinicName && errors.clinicName}
+            containerStyle={[styles.fieldMargin]}
+            leftIcon={
+              <VectorIcons
+                name="business"
+                size={20}
+                color="#9CA3AF"
+                iconSet={IconSets.MaterialIcons}
+              />
+            }
+          />
+          <CustomInput
+            placeholder="Clinic Phone"
+            value={values.clinicPhone}
+            onChangeText={handleChange('clinicPhone')}
+            error={touched.clinicPhone && errors.clinicPhone}
+            containerStyle={[styles.fieldMargin]}
+            extra={{
+              keyboardType: 'phone-pad',
+              inputMode: 'numeric',
+            }}
+            leftIcon={
+              <VectorIcons
+                name="phone"
+                size={20}
+                color="#9CA3AF"
+                iconSet={IconSets.MaterialIcons}
+              />
+            }
+          />
           <Text style={styles.labelStyleBase} >Clinic Address</Text>
           <CustomInput
             placeholder="Address Line 1"

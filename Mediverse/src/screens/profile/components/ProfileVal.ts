@@ -53,6 +53,9 @@ export interface DoctorFormValues extends User {
       start: string; // 'HH:mm' format (e.g., '09:00')
       end: string;
     };
+    clinicName: string;
+    clinicPhone: string;
+    
     clinicAddress: {
         line1: string;
         line2?: string;

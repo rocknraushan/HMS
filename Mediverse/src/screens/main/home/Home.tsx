@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, ScrollView, Text, FlatList, StyleSheet, SafeAreaView } from 'react-native';
 import LocationHeader from './components/LocationHeader';
 import SearchBar from './components/SearchBar';
@@ -7,6 +7,8 @@ import CategoryGrid from './components/CategoryGrid';
 import MedicalCenterCard from './components/MedicalCenterCard';
 import { img_4, img_5 } from '../../../assets';
 import { rspH } from '../../../theme/responsive';
+import { apiCalls } from '../../../HttpService/apiCalls';
+import { number } from 'yup';
 
 const centers = [
   { title: 'Sunrise Health Clinic', image: img_4 },
@@ -14,9 +16,27 @@ const centers = [
 ];
 
 const HomeScreen = () => {
+  const [nearbyCenters, setNearbyCenters] = React.useState<any[]>([]);
+  const [currentLocation, setCurrentLocation] = React.useState<[number,number]>([0, 0]);
+  
+  const getNearbyDoctorList = async (location: [number, number]) => {
+    try {
+      const response = await apiCalls.getNearbyDoctors(location);
+      console.log('Nearby doctors:=====>', response);
+      setNearbyCenters(response);
+    } catch (error) {
+      console.error('Error fetching nearby doctors:', error);
+    }
+  };
+  
+  useEffect(() => {
+    getNearbyDoctorList(currentLocation);
+  }, [currentLocation])
+  
+
   return (
       <SafeAreaView style={{ marginTop: rspH(16),flex:1 ,backgroundColor:'#fff'}}>
-      <LocationHeader />
+      <LocationHeader setLocation={setCurrentLocation} />
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <SearchBar />
       <PromoBannerCarousel />
@@ -29,9 +49,9 @@ const HomeScreen = () => {
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
-        data={centers}
+        data={nearbyCenters}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => <MedicalCenterCard {...item} />}
+        renderItem={MedicalCenterCard}
         contentContainerStyle={{ paddingRight: 16 }}
       /> 
       </View>

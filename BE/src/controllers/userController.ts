@@ -14,6 +14,7 @@ import otpGenerator from 'otp-generator'
 import Patient from "../models/Patients";
 import { AuthRequest } from "index";
 import { tryParseJSON } from "../utils/GenericFunctions";
+import { saveCoverImage } from "../utils/coverImageUploader";
 
 const FRONTEND_APP_URL = "http://www.evaidhya.site/";
 
@@ -32,7 +33,7 @@ export async function createUser(req: Request, res: Response): Promise<any> {
     // Check if the role is valid
     const allowedRoles = ["doctor", "nurse", "patient", "emt"];
     if (!allowedRoles.includes(role)) {
-      return res.status(400).json({ message: "Invalid role",errors: { role: "Role not allowed" } });
+      return res.status(400).json({ message: "Invalid role", errors: { role: "Role not allowed" } });
     }
 
     // Create the User document
@@ -105,7 +106,7 @@ export async function createUser(req: Request, res: Response): Promise<any> {
           setDefaultsOnInsert: true
         }
       );
-    
+
 
       // Send a welcome notification
       await admin
@@ -368,7 +369,12 @@ export async function verifyOtpAndResetPassword(req: Request, res: Response): Pr
 
 
 export async function updateProfile(req: AuthRequest, res: Response): Promise<any> {
-  const profilePic = req.file;
+  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+  const profilePic = files["profilePic"]?.[0];
+  const coverPic = files["coverPic"]?.[0];
+  const documents = files["documents"]?.[0];
+  const prescriptions = files["prescriptions"]?.[0];
   const user = req.user;
 
   if (!user) {
@@ -376,7 +382,7 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
   }
 
   try {
-    const baseFields: (keyof IUser)[] = ['name', 'email', 'phone', 'gender', 'firstName', 'lastName',"address",];
+    const baseFields: (keyof IUser)[] = ['name', 'email', 'phone', 'gender', 'firstName', 'lastName', "address",];
     const updatedData: Partial<IUser> = { firstLogin: false };
 
     // Base profile fields update
@@ -410,7 +416,7 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
     }
 
     // Parse JSON fields (like 'workingHours', 'clinicAddress') before updating
-    
+
 
     // Update main user model
     const updatedUser = await User.findByIdAndUpdate(user._id, updatedData, {
@@ -440,24 +446,27 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
         );
         break;
 
-        case 'doctor':
-          const workingHours = tryParseJSON(req.body.workingHours);
-          const clinicAddress = tryParseJSON(req.body.clinicAddress);
-          const location = tryParseJSON(req.body.location);
-        // console.log(location, "location====>")
-          await Doctor.findOneAndUpdate(
-            { user: user._id },
-            {
-              ...req.body,
-              isAvailable: req.body.isAvailable,
-              workingHours,
-              clinicAddress,
-              location,
-            },
-            { upsert: true, new: true }
-          );
-          break;
-        
+      case 'doctor':
+        const workingHours = tryParseJSON(req.body.workingHours);
+        const clinicAddress = tryParseJSON(req.body.clinicAddress);
+        const location = tryParseJSON(req.body.location);
+        const coverImage = coverPic && coverPic.buffer ? await saveCoverImage(coverPic, "clinic_cover_images") : null;
+
+
+        await Doctor.findOneAndUpdate(
+          { user: user._id },
+          {
+            ...req.body,
+            isAvailable: req.body.isAvailable,
+            workingHours,
+            clinicAddress,
+            location,
+            coverImage
+          },
+          { upsert: true, new: true }
+        );
+        break;
+
       case 'nurse':
         await Nurse.findOneAndUpdate(
           { user: user._id },
@@ -488,7 +497,7 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
         break;
 
       default:
-        // console.warn(`No role-specific model handler for role: ${user.role}`);
+      // console.warn(`No role-specific model handler for role: ${user.role}`);
     }
 
     res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
@@ -515,23 +524,23 @@ export async function getProfile(req: AuthRequest, res: Response): Promise<any> 
 
     switch (user.role) {
       case 'patient': {
-        const patient = await Patient.findOne({ user:userId }).select("height weight allergies medicalHistory prescriptions documents bloodGroup dob age");
+        const patient = await Patient.findOne({ user: userId }).select("height weight allergies medicalHistory prescriptions documents bloodGroup dob age");
         if (patient) roleData = patient.toObject();
         break;
       }
       case 'doctor': {
-        const doctor = await Doctor.findOne({ user:userId }).select("specialization isAvailable experience licenseNumber verified bio workingHours clinicAddress rating verified education");
+        const doctor = await Doctor.findOne({ user: userId }).select("specialization isAvailable experience licenseNumber verified bio workingHours clinicAddress rating verified education");
         // console.log(doctor, "doctor data===>")
         if (doctor) roleData = doctor.toObject();
         break;
       }
       case 'nurse': {
-        const nurse = await Nurse.findOne({ user:userId }).select("isAvailable specialization experience verified bio education licenseNumber rating");
+        const nurse = await Nurse.findOne({ user: userId }).select("isAvailable specialization experience verified bio education licenseNumber rating");
         if (nurse) roleData = nurse.toObject();
         break;
       }
       case 'emt': {
-        const emt = await EMT.findOne({ user:userId }).select("isAvailable location ambulanceNumber");
+        const emt = await EMT.findOne({ user: userId }).select("isAvailable location ambulanceNumber");
         if (emt) roleData = emt.toObject();
         break;
       }
@@ -598,7 +607,7 @@ export async function uploadProfilePic(req: AuthRequest, res: Response): Promise
 
 export async function updateLocation(req: AuthRequest, res: Response): Promise<any> {
   const user = req.user;
-  const { latitude, longitude } = req.body;
+  const { location } = req.body;
 
   if (!user) {
     return res.status(404).json({ message: 'User not found' });
@@ -608,10 +617,7 @@ export async function updateLocation(req: AuthRequest, res: Response): Promise<a
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
       {
-        location: {
-          type: "Point",
-          coordinates: [longitude, latitude]
-        }
+        location
       },
       { new: true }
     );

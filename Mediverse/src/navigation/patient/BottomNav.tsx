@@ -100,6 +100,9 @@ const BottomNav = ({ navigation }: Props) => {
           color: 'black',
           fontSize: rspF(20),
         },
+        tabBarStyle:{
+          paddingTop: 5,
+        },
         headerLeft: () => {
           return (
             <TouchableOpacity

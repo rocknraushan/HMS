@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 
 export interface ILocation {
   type: "Point";
-  coordinates: [number, number];
+  coordinates: [number, number];//[longitude, latitude]
 }
 
 export interface IAddress {

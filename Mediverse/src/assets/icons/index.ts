@@ -34,5 +34,6 @@ export const Icons = {
   eyeOpenIcon: require("./eye-open.png"),
   eyeCloseIcon: require("./eye-closed.png"),
   userIcon: require("./user.png"),
-  googleIcon: require("./ic_google.png")
+  googleIcon: require("./ic_google.png"),
+  coverImage: require("./coverImage.jpg"),
 };

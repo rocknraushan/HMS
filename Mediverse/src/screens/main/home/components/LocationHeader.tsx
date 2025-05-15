@@ -11,11 +11,16 @@ import {
 import { BellIcon, DownArrow, LocationIcon } from '../../../../assets/icons/svg/SvgIcons';
 import Geolocation from '@react-native-community/geolocation';
 import { rspH, rspW } from '../../../../theme/responsive';
+import { apiCalls } from '../../../../HttpService/apiCalls';
 
 const GOOGLE_API_KEY = 'AIzaSyBMznm-jJXo1zOwHyFkQz8WgwEKegN7BsQ';
 
+interface Props {
+  onPress?: () => void;
+setLocation?: (location: [number,number]) => void;
+}
 
-const LocationNotificationHeader = () => {
+const LocationNotificationHeader:React.FC<Props> = ({onPress,setLocation}) => {
   const [locationText, setLocationText] = useState('Searching...');
   const [loading, setLoading] = useState(true);
 
@@ -53,7 +58,7 @@ const LocationNotificationHeader = () => {
     Geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-
+        setLocation?.([longitude, latitude]);
         try {
           const res = await fetch(
             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`
@@ -65,10 +70,11 @@ const LocationNotificationHeader = () => {
           const country = components.find((c: { types: string[]; long_name: string }) => c.types.includes('country'))?.long_name;
 
           if (city || country) {
-            setLocationText(`${city ?? 'Unknown'}, ${country ?? ''}`);
+            setLocationText(`${city ?? 'Unknown'}\n${country ?? ''}`);
           } else {
             setLocationText('Location not found');
           }
+          await apiCalls.updateLocation([longitude, latitude]);
         } catch (error) {
           console.log('Geocoding error:', error);
           setLocationText('Location error');
