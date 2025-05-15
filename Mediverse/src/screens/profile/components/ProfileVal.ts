@@ -1,13 +1,39 @@
 import StorageProvider from "../../../storage/Storage";
+import { BufferImage } from "./ProfilePicUploader";
 
 // Common Interface
-export interface User {
+// types/user.ts
+
+export interface Location {
+    type: "Point";
+    coordinates: [number, number]; // [longitude, latitude]
+  }
+  
+  export interface Address {
+    line1: string;
+    line2: string;
+    city: string;
+    state: string;
+    country: string;
+    pincode: string;
+  }
+  
+  export type UserRole = "doctor" | "nurse" | "admin" | "patient" | "emt";
+  
+  interface fileType {uri: string; type: string; name: string};
+  export interface User {
+    firstName?: string;
+    lastName?: string;
     name: string;
-    phone: string;
-    profilePic: Buffer | { uri: string; type: string; name: string };
-    gender: string;
     email: string;
-}
+    profilePic: BufferImage | fileType; 
+    socialData?: any;
+    gender: string;
+    phone: string;
+    location?: Location;
+    address?: Address;
+  }
+  
 export interface IAddress {
     line1: string;
     line2: string;
@@ -48,14 +74,40 @@ export interface DoctorFormValues extends User {
   }
   
 
-export interface Patient extends User {
-    age: string;
-    dob: string;
-    bloodGroup: string;
-    medicalHistory: any[];  // Replace 'any' with a proper type if known
-    prescriptions: any[];
-    documents: any[];
-}
+// types/patient.ts
+
+export interface MedicalHistory {
+    condition: string;
+    diagnosisDate: Date | string;
+    advice?: string;
+  }
+  
+  export interface Prescription {
+    prescribedBy: string; // assuming you use ObjectId as string in frontend
+    date: Date | string;
+    medications: string;
+    advice?: string;
+  }
+  
+  export interface MedicalDocument {
+    name: string;
+    url: string;
+    type: string; // e.g., 'image/jpeg', 'application/pdf'
+  }
+  
+  export interface Patient extends User {
+    age: number | string; // Age in years
+    dob: Date | string; // Date of Birth
+    bloodGroup?: string;
+    allergies?: string[];
+    medicalConditions?: string[];
+    height?: number;
+    weight?: number;
+    medicalHistory?: MedicalHistory[];
+    prescriptions?: Prescription[];
+    documents?: MedicalDocument[];
+  }
+  
 
 export interface Nurse extends User {
     experience: string;
@@ -70,15 +122,32 @@ export const UserVal: User = {
     profilePic: { uri: '', type: '', name: '' },
     gender: '',
     email: '',
+    address:{
+        line1: '',
+        line2: '',
+        city: '',
+        state: '',
+        country: '',
+        pincode: ''
+    },
+    location:{
+        type: 'Point',
+        coordinates: [0, 0]
+    },
+
 };
 
 
 
 export const patientVal: Patient = {
     ...UserVal,
-    age: '',
-    dob: '',
     bloodGroup: '',
+    age: 0,
+    dob: new Date(),
+    allergies: [],
+    medicalConditions: [],
+    height: 0,
+    weight: 0,
     medicalHistory: [],
     prescriptions: [],
     documents: [],

@@ -21,10 +21,8 @@ export interface IDocument {
 
 export interface IPatient extends Document {
   user: mongoose.Types.ObjectId | string;
-  name: string;
+  dob: Date; // Date of Birth
   age: number;
-  gender: string;
-  address: string;
   allergies?: string[];
   medicalConditions?: string[];
   height?: number; // in cm
@@ -32,6 +30,8 @@ export interface IPatient extends Document {
   medicalHistory?: IMedicalHistory[];
   prescriptions?: IPrescription[];
   documents?: IDocument[];
+  bloodGroup?: string;
+  
 }
 
 const medicalHistorySchema: Schema = new Schema({
@@ -56,16 +56,16 @@ const documentSchema: Schema = new Schema({
 const patientSchema: Schema<IPatient> = new Schema(
   {
     user:{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    name: { type: String, required: true },
-    age: { type: Number, required: true },
-    gender: { type: String, required: false },
-    address: { type: String, required: false },
+    age: { type: Number, required: false },
+    dob: { type: Date, required: false },
     medicalHistory: [medicalHistorySchema],
     prescriptions: [prescriptionSchema],
     documents: [documentSchema],
     allergies: { type: [String] },
     height: { type: Number }, // in cm
     weight: { type: Number }, // in kg
+    bloodGroup: { type: String },
+    medicalConditions: { type: [String] },
   },
   { timestamps: true }
 );

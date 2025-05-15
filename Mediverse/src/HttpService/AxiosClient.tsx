@@ -2,8 +2,8 @@ import axios from 'axios';
 import * as Keychain from 'react-native-keychain';
 
 export const BASE_URL =
-  "https://hms-f6xv.onrender.com/";
-// "http://192.168.26.129:5000/";
+  // "https://hms-f6xv.onrender.com/";
+"http://192.168.214.129:5000/";
 
 const getAxiosClient = async () => {
   const client = axios.create({

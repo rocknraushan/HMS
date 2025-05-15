@@ -14,6 +14,7 @@ import Toast from 'react-native-toast-message'
 import { patientVal } from './ProfileVal'
 import DocumentUploader from '../../../components/DocUploader/DocumentUploader'
 import { PermissionsAndroid } from 'react-native'
+import { bufferToImageUrl, BufferType } from '../../../utils/commonFunction'
 
 type Props = {
   data: any;
@@ -31,7 +32,10 @@ const bloodGroups = [
   { label: 'O-', value: 'O-' },
 ];
 
-const PatientForm: React.FC<Props> = ({ data, navigation }) => {
+
+
+const PatientForm: React.FC<Props> = ({data,navigation}) => {
+  const [initialValues, setInitialValues] = useState(patientVal);
   const formikRef = React.useRef<FormikProps<any>>(null);
 
   const [verificationError, setVerificationError] = useState<string | null>(null);
@@ -39,6 +43,31 @@ const PatientForm: React.FC<Props> = ({ data, navigation }) => {
   const [resendLoading, setResendLoading] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [hasStoragePermission, setHasStoragePermission] = useState(false);
+
+  useEffect(() => {
+    if (data) {
+      let address = {};
+      if (data?.address) {
+        address = JSON.parse(data.address);
+      }
+      setInitialValues({
+        ...patientVal,
+        ...data,
+        profilePic: {
+          uri: data?.profilePic ? bufferToImageUrl(data.profilePic as BufferType) : '',
+          type: 'image/jpeg',
+          name: 'profile.jpg',
+        },
+        address
+        
+      })
+    }
+  
+    return () => {
+      
+    }
+  }, [data])
+  
 
   const handleDobChange = (selectedDate: any) => {
     const age = new Date().getFullYear() - new Date(selectedDate).getFullYear();
@@ -60,7 +89,21 @@ const PatientForm: React.FC<Props> = ({ data, navigation }) => {
             type: values.profilePic.type || 'image/jpeg',
             name: 'name' in values.profilePic ? values.profilePic.name : 'profile.jpg',
           });
-        } else if (values[key as typeof values] !== undefined) {
+        }else if (key === 'documents' && values.documents.length > 0) {
+          values.documents.forEach((doc: any) => {
+            formData.append('documents', {
+              uri: doc.uri,
+              type: doc.type || 'application/pdf',
+              name: doc.name || 'document.pdf',
+            });
+          });
+        }
+        else if (key === 'address') {
+          Object.keys(values.address).forEach((addressKey) => {
+            formData.append(`address[${addressKey}]`, values.address[addressKey]);
+          });
+        }
+         else if (values[key as typeof values] !== undefined) {
           formData.append(key, String(values[key as keyof typeof values]));
         }
       });
@@ -129,12 +172,7 @@ const PatientForm: React.FC<Props> = ({ data, navigation }) => {
 
   return (
     <Formik
-      initialValues={{
-        ...patientVal,
-        name: data?.name || '',
-        email: data?.email || '',
-        phone: data?.phone || '',
-      }}
+      initialValues={initialValues}
       innerRef={formikRef}
       validationSchema={profileValidation}
       enableReinitialize
@@ -251,32 +289,233 @@ const PatientForm: React.FC<Props> = ({ data, navigation }) => {
             }
             containerStyle={styles.fieldMargin}
           />
-          <CustomInput
-            placeholder="Address"
-            value={values.address}
-            onChangeText={handleChange('address')}
-            extra={{
-              onBlur: handleBlur('address'),
-              multiline: true,
-            }}
-            error={touched.address && errors.address}
-            containerStyle={{ marginBottom: 12 }}
-            leftIcon={
-              <VectorIcons
-                name="location-on"
-                size={20}
-                color="#9CA3AF"
-                iconSet={IconSets.MaterialIcons}
-              />
-            }
-          />
-
           <DocumentUploader
             value={values.documents}
             onChange={(docs: any[]) => setFieldValue('documents', docs)}
             hasPermission={hasStoragePermission}
           />
 
+          <View>
+            <CustomDatePicker
+              handleChange={handleChange('dob')}
+              onDateChange={handleDobChange}
+              value={values.dob}
+              error={touched.dob && errors.dob}
+              placeholder='Date of Birth'
+              containerStyle={styles.fieldMargin}
+              mode='date'
+              format='DD-MMM-YYYY'
+              extra={{
+                maximumDate: new Date(),
+                minimumDate: new Date('1900-01-01')
+              }}
+            />
+            <CustomInput
+              placeholder="Age"
+              value={`${values.age}`}
+              onChangeText={handleChange('age')}
+              error={touched.age && errors.age}
+              extra={{
+                keyboardType: 'numeric',
+                inputMode: 'numeric',
+                editable: false,
+              }}
+              leftIcon={
+                <VectorIcons
+                  name="cake"
+                  size={20}
+                  color="#9CA3AF"
+                  iconSet={IconSets.MaterialIcons}
+                />
+              }
+              containerStyle={styles.fieldMargin}
+            />
+            <CustomInput
+              placeholder="Height (cm)"
+              value={`${values.height}`}
+              onChangeText={handleChange('height')}
+              error={touched.height && errors.height}
+              extra={{
+                keyboardType: 'numeric',
+                inputMode: 'numeric',
+              }}
+              leftIcon={
+                <VectorIcons
+                  name="height"
+                  size={20}
+                  color="#9CA3AF"
+                  iconSet={IconSets.MaterialIcons}
+                />
+              }
+              containerStyle={styles.fieldMargin}
+            />
+            <CustomInput
+              placeholder="Weight (kg)"
+              value={`${values.weight}`}
+              onChangeText={handleChange('weight')}
+              error={touched.weight && errors.weight}
+              extra={{
+                keyboardType: 'numeric',
+                inputMode: 'numeric',
+              }}
+              leftIcon={
+                <VectorIcons
+                  name="weight"
+                  size={20}
+                  color="#9CA3AF"
+                  iconSet={IconSets.MaterialCommunityIcons}
+                />
+              }
+              containerStyle={styles.fieldMargin}
+            />
+            <CustomInput
+              placeholder="Allergies (Comma separated)"
+              value={values.allergies}
+              extra={{
+                multiline: true,
+                numberOfLines: 4,
+                textAlignVertical: 'top',
+                keyboardType: 'default',
+                inputMode: 'text',
+                textAlign: 'left',
+              }}
+              inputStyle={{ height: 100 }}
+              onChangeText={handleChange('allergies')}
+              error={touched.allergies && errors.allergies}
+              leftIcon={
+                <VectorIcons
+                  name="allergy"
+                  size={20}
+                  color="#9CA3AF"
+                  style={{alignSelf:"baseline",marginTop: 12}}
+                  iconSet={IconSets.MaterialCommunityIcons}
+                />
+              }
+              containerStyle={styles.fieldMargin}
+            />
+            {/* <CustomInput
+              placeholder="Medical Conditions"
+              value={values.medicalConditions}
+              onChangeText={handleChange('medicalConditions')}
+              error={touched.medicalConditions && errors.medicalConditions}
+              leftIcon={
+                <VectorIcons
+                  name="medical-bag"
+                  size={20}
+                  color="#9CA3AF"
+                  iconSet={IconSets.MaterialCommunityIcons}
+                />
+              }
+              containerStyle={styles.fieldMargin}
+            />
+            <CustomInput
+              placeholder="Medical History"
+              value={values.medicalHistory}
+              onChangeText={handleChange('medicalHistory')}
+              error={touched.medicalHistory && errors.medicalHistory}
+              leftIcon={
+                <VectorIcons
+                  name="history"
+                  size={20}
+                  color="#9CA3AF"
+                  iconSet={IconSets.MaterialIcons}
+                />
+              }
+              containerStyle={styles.fieldMargin}
+            />
+            <CustomInput
+              placeholder="Prescriptions"
+              value={values.prescriptions}
+              onChangeText={handleChange('prescriptions')}
+              error={touched.prescriptions && errors.prescriptions}
+              leftIcon={
+                <VectorIcons
+                  name="prescription"
+                  size={20}
+                  color="#9CA3AF"
+                  iconSet={IconSets.MaterialCommunityIcons}
+                />
+              }
+              containerStyle={styles.fieldMargin}
+            /> */}
+            <Text style={styles.addresstxt}>Address</Text>
+            <CustomInput
+              placeholder='Line 1'
+              value={values.address.line1}
+              onChangeText={handleChange('address.line1')}
+              error={touched.address && errors.address}
+              leftIcon={
+                <VectorIcons
+                  name="home"
+                  size={20}
+                  color="#9CA3AF"
+                  iconSet={IconSets.MaterialIcons}
+                />
+              }
+            />
+            <CustomInput
+              placeholder='Line 2'
+              value={values.address.line2}
+              onChangeText={handleChange('address.line2')}
+              error={touched.address && errors.address}
+              leftIcon={
+                <VectorIcons
+                  name="home"
+                  size={20}
+                  color="#9CA3AF"
+                  iconSet={IconSets.MaterialIcons}
+                />
+              }
+              containerStyle={styles.fieldMargin}
+            />
+            <CustomInput
+              placeholder='City'
+              value={values.address.city}
+              onChangeText={handleChange('address.city')}
+              error={touched.address && errors.address}
+              leftIcon={
+                <VectorIcons
+                  name="city"
+                  size={20}
+                  color="#9CA3AF"
+                  iconSet={IconSets.FontAwesome5}
+                />
+              }
+              containerStyle={styles.fieldMargin}
+            />
+            <CustomInput
+              placeholder='State'
+              value={values.address.state}
+              onChangeText={handleChange('address.state')}
+              error={touched.address && errors.address}
+              containerStyle={styles.fieldMargin}
+            />
+            <CustomInput
+              placeholder='Country'
+              value={values.address.country}
+              onChangeText={handleChange('address.country')}
+              error={touched.address && errors.address}
+              containerStyle={styles.fieldMargin}
+            />
+            <CustomInput
+              placeholder='Pincode'
+              value={values.address.pincode}
+              onChangeText={handleChange('address.pincode')}
+              error={touched.address && errors.address}
+              containerStyle={styles.fieldMargin}
+            />
+
+            {values.documents.length > 0 && (
+              <View style={{ marginTop: 10 }}>
+                <Text>Selected Documents:</Text>
+                {values.documents.map((doc: any, idx: number) => (
+                  <Text key={idx} style={{ fontSize: 12 }}>
+                    • {doc.title}
+                  </Text>
+                ))}
+              </View>
+            )}
+          </View>
           <PromiseButton
             onPress={handleSubmit}
             text="Update Profile"
@@ -292,6 +531,11 @@ const PatientForm: React.FC<Props> = ({ data, navigation }) => {
 export default memo(PatientForm)
 
 const styles = StyleSheet.create({
+  addresstxt: {
+    fontSize: 16,
+    marginTop: 20,
+    marginBottom: 10,
+  },
   fieldMargin: {
     marginTop: 20,
   },

@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     marginBottom: 8
   },
   inputWraper: {
-    height: 50,
+    minHeight: 50,
     borderColor: '#9CA3AF',
     borderWidth: 1,
     borderRadius: 10,

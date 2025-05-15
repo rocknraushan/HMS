@@ -102,7 +102,8 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
       workingHours: {
         start: data?.workingHours?.start,
         end: data?.workingHours?.end
-      }
+      },
+      profilePic: data?.profilePic
         });
   
     return () => {
@@ -140,7 +141,7 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
       const formData = new FormData();
   
       Object.keys(values).forEach((key) => {
-        if (key === 'profilePic' && 'uri' in values.profilePic && values.profilePic.uri) {
+        if (key === 'profilePic' && 'uri' in values?.profilePic && values.profilePic.uri) {
           formData.append('profilePic', {
             uri: values.profilePic.uri,
             type: values.profilePic.type || 'image/jpeg',
@@ -236,10 +237,9 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
           <ProfilePicUploader
             onSelect={(e) => setFieldValue('profilePic', e)}
             image={
-              values.profilePic && 'data' in values.profilePic
-                ? values.profilePic
-                //@ts-ignore
-                : values.profilePic?.uri || ''
+              !(values.profilePic.type && values.profilePic)
+              ?values.profilePic?.uri || ''
+                :values.profilePic
             }
           />
           <CustomInput

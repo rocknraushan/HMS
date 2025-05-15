@@ -376,7 +376,7 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
   }
 
   try {
-    const baseFields: (keyof IUser)[] = ['name', 'email', 'phone', 'gender', 'firstName', 'lastName'];
+    const baseFields: (keyof IUser)[] = ['name', 'email', 'phone', 'gender', 'firstName', 'lastName',"address",];
     const updatedData: Partial<IUser> = { firstLogin: false };
 
     // Base profile fields update
@@ -428,9 +428,8 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
         await Patient.findOneAndUpdate(
           { user: user._id },
           {
-            name: req.body.name,
+            ...req.body,
             age: req.body.age,
-            gender: req.body.gender,
             contact: req.body.contact,
             address: req.body.address,
             medicalHistory: req.body.medicalHistory,
@@ -508,7 +507,7 @@ export async function getProfile(req: AuthRequest, res: Response): Promise<any> 
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
     const user = await User.findById(userId)
-      .select("name email role phone profilePic firstLogin");
+      .select("name email role phone profilePic firstLogin address gender lastName location address");
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -516,7 +515,7 @@ export async function getProfile(req: AuthRequest, res: Response): Promise<any> 
 
     switch (user.role) {
       case 'patient': {
-        const patient = await Patient.findOne({ user:userId }).select("height weight allergies address medicalHistory prescriptions documents");
+        const patient = await Patient.findOne({ user:userId }).select("height weight allergies medicalHistory prescriptions documents bloodGroup dob age");
         if (patient) roleData = patient.toObject();
         break;
       }
@@ -540,14 +539,8 @@ export async function getProfile(req: AuthRequest, res: Response): Promise<any> 
 
     res.status(200).json({
       profile: {
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        gender: user.gender,
-        profilePic: user.profilePic,
-        role: user.role,
-        firstLogin: user.firstLogin,
         ...roleData,
+        ...user.toObject(),
       }
     });
   } catch (error) {
@@ -601,3 +594,38 @@ export async function uploadProfilePic(req: AuthRequest, res: Response): Promise
   }
 }
 
+
+
+export async function updateLocation(req: AuthRequest, res: Response): Promise<any> {
+  const user = req.user;
+  const { latitude, longitude } = req.body;
+
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      {
+        location: {
+          type: "Point",
+          coordinates: [longitude, latitude]
+        }
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found after update' });
+    }
+
+    res.status(200).json({
+      message: 'Location updated successfully',
+      location: updatedUser.location,
+    });
+  } catch (error) {
+    // console.error('Error updating location:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+}

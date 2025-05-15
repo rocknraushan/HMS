@@ -13,7 +13,7 @@ type Props = {
   mode?: 'date' | 'time' | 'datetime' | undefined;
   is24Hour?: boolean;
   containerStyle?: StyleProp<ViewStyle>;
-  extra?: BaseProps;
+  extra?: Partial<BaseProps>;
   placeholder?: string;
   disabled?: boolean;
   format?: string;

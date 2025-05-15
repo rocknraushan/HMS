@@ -4,7 +4,7 @@ import ImageCropPicker from 'react-native-image-crop-picker';
 import VectorIcons, { IconSets } from '../../../components/Icons/VectorIcons';
 import { Icons } from '../../../assets/icons';
 
-interface BufferImage {
+export interface BufferImage {
   data: number[];
   type: 'Buffer';
 }
