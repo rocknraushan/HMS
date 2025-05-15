@@ -26,7 +26,7 @@ export interface Location {
     lastName?: string;
     name: string;
     email: string;
-    profilePic: BufferImage | fileType; 
+    profilePic: fileType; 
     socialData?: any;
     gender: string;
     phone: string;

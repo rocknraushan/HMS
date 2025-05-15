@@ -42,7 +42,7 @@ const userSchema: Schema<IUser> = new Schema(
     name: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    profilePic: { type: Buffer }, // assuming image buffer; switch to String if URL
+    profilePic: { type: String }, // assuming image buffer; switch to String if URL
     socialData: { type: Object },
     gender: { type: String },
     phone: { type: String },

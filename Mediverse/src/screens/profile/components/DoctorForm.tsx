@@ -103,7 +103,11 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
         start: data?.workingHours?.start,
         end: data?.workingHours?.end
       },
-      profilePic: data?.profilePic
+      profilePic: {
+        uri: data?.profilePic,
+        type: "image/jpeg",
+        name: "",
+      }
         });
   
     return () => {
@@ -236,11 +240,7 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
         <>
           <ProfilePicUploader
             onSelect={(e) => setFieldValue('profilePic', e)}
-            image={
-              !(values.profilePic.type && values.profilePic)
-              ?values.profilePic?.uri || ''
-                :values.profilePic
-            }
+            image={values.profilePic?.uri}
           />
           <CustomInput
             placeholder="Full Name"

@@ -22,7 +22,7 @@ const HomeScreen = () => {
       <PromoBannerCarousel />
       <View style={{paddingHorizontal:16}} >
       <CategoryGrid />
-      <View style={styles.row}>
+      <View style={[styles.row,{marginBlock:10}]}>
         <Text style={styles.title}>Nearby Medical Centers</Text>
         <Text style={styles.seeAll}>See All</Text>
       </View>
