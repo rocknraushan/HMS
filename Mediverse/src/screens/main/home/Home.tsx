@@ -10,20 +10,28 @@ import { rspH } from '../../../theme/responsive';
 import { apiCalls } from '../../../HttpService/apiCalls';
 import { number } from 'yup';
 import MedicalCenterCardSkeleton from '../../../components/SkeletonLoader/MedicalCenterCardSkeleton';
+import { NavigationProp } from '@react-navigation/native';
+import { RootStackParamList } from '../../../navigation/navStrings';
 
 const centers = [
   { title: 'Sunrise Health Clinic', image: img_4 },
   { title: 'Golden Cardiology', image: img_5 },
 ];
 
-const HomeScreen = () => {
+interface Props{
+    navigation: NavigationProp<RootStackParamList, 'HOME'>;
+}
+
+const HomeScreen = ({navigation}:Props) => {
   const [nearbyCenters, setNearbyCenters] = React.useState<any[]>([]);
   const [currentLocation, setCurrentLocation] = React.useState<[number,number]>([0, 0]);
   
+  const handleItemPress = (item:any)=>{
+    navigation.navigate("DoctorProfileScreen",{doctor_details:item})
+  }
   const getNearbyDoctorList = async (location: [number, number]) => {
     try {
       const response = await apiCalls.getNearbyDoctors(location);
-      console.log('Nearby doctors:=====>', response);
       setNearbyCenters(response);
     } catch (error) {
       console.error('Error fetching nearby doctors:', error);
@@ -51,7 +59,7 @@ const HomeScreen = () => {
         showsHorizontalScrollIndicator={false}
         data={nearbyCenters}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={MedicalCenterCard}
+        renderItem={({item,index})=><MedicalCenterCard item={item} onPress={handleItemPress}/>}
         contentContainerStyle={{ paddingRight: 16 }}
         ListEmptyComponent={MedicalCenterCardSkeleton}
       /> 

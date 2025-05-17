@@ -15,6 +15,7 @@ import Patient from "../models/Patients";
 import { AuthRequest } from "index";
 import { tryParseJSON } from "../utils/GenericFunctions";
 import { saveCoverImage } from "../utils/coverImageUploader";
+import { sendNotificationAndStore } from "../utils/NotificationService";
 
 const FRONTEND_APP_URL = "http://www.evaidhya.site/";
 
@@ -107,23 +108,10 @@ export async function createUser(req: Request, res: Response): Promise<any> {
         }
       );
 
-
-      // Send a welcome notification
-      await admin
-        .messaging()
-        .send({
-          notification: {
-            title: "Welcome to Mediverse",
-            body: "You have successfully registered with Mediverse",
-          },
-          token: deviceToken,
+       await sendNotificationAndStore(`${user?._id}`,deviceToken,{
+          title:"Welcome to Mediverse",
+          body:"You have successfully registered with Mediverse"
         })
-        .then((response) => {
-          // // console.log("Successfully sent message:", response);
-        })
-        .catch((error) => {
-          // // console.error("Error sending message:", error);
-        });
     }
 
     // Save user data
@@ -372,7 +360,7 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
   const profilePic = files["profilePic"]?.[0];
-  const coverPic = files["coverPic"]?.[0];
+  const coverPic = files["coverImage"]?.[0];
   const documents = files["documents"]?.[0];
   const prescriptions = files["prescriptions"]?.[0];
   const user = req.user;
@@ -451,8 +439,6 @@ export async function updateProfile(req: AuthRequest, res: Response): Promise<an
         const clinicAddress = tryParseJSON(req.body.clinicAddress);
         const location = tryParseJSON(req.body.location);
         const coverImage = coverPic && coverPic.buffer ? await saveCoverImage(coverPic, "clinic_cover_images") : null;
-
-
         await Doctor.findOneAndUpdate(
           { user: user._id },
           {
@@ -529,7 +515,7 @@ export async function getProfile(req: AuthRequest, res: Response): Promise<any> 
         break;
       }
       case 'doctor': {
-        const doctor = await Doctor.findOne({ user: userId }).select("specialization isAvailable experience licenseNumber verified bio workingHours clinicAddress rating verified education");
+        const doctor = await Doctor.findOne({ user: userId }).select("specialization coverImage clinicName isAvailable experience licenseNumber verified bio workingHours clinicAddress rating verified education");
         // console.log(doctor, "doctor data===>")
         if (doctor) roleData = doctor.toObject();
         break;
@@ -632,6 +618,43 @@ export async function updateLocation(req: AuthRequest, res: Response): Promise<a
     });
   } catch (error) {
     // console.error('Error updating location:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+}
+
+export async function getNotification(req: AuthRequest, res: Response): Promise<any> {
+  const user = req.user;
+
+  if (!user) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  try {
+    const notifications = (await User.findById(user._id))?.notification || [];
+    const formatted = notifications.map((n, index) => {
+      const createdDate = new Date(n.createdAt || Date.now());
+      const now = new Date();
+      const diffMs = now.getTime() - createdDate.getTime();
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const timeAgo = hours < 24 ? `${hours}h` : `${Math.floor(hours / 24)}d`;
+
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const category = createdDate >= startOfToday ? 'today' : 'yesterday';
+
+      return {
+        id: `${user._id}-${index}`,
+        title: n.title,
+        message: n.body,
+        icon: n.icon,
+        category,
+        timeAgo,
+        read: n.read ?? false,
+      };
+    });
+
+    res.status(200).json({ notifications: formatted });
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 }

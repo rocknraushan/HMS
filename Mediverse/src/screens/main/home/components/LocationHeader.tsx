@@ -12,6 +12,7 @@ import { BellIcon, DownArrow, LocationIcon } from '../../../../assets/icons/svg/
 import Geolocation from '@react-native-community/geolocation';
 import { rspH, rspW } from '../../../../theme/responsive';
 import { apiCalls } from '../../../../HttpService/apiCalls';
+import { useNavigation } from '@react-navigation/native';
 
 const GOOGLE_API_KEY = 'AIzaSyBMznm-jJXo1zOwHyFkQz8WgwEKegN7BsQ';
 
@@ -23,7 +24,7 @@ setLocation?: (location: [number,number]) => void;
 const LocationNotificationHeader:React.FC<Props> = ({onPress,setLocation}) => {
   const [locationText, setLocationText] = useState('Searching...');
   const [loading, setLoading] = useState(true);
-
+  const navigation = useNavigation();
   const askPermission = async () => {
     if (Platform.OS === 'android') {
       try {
@@ -90,6 +91,10 @@ const LocationNotificationHeader:React.FC<Props> = ({onPress,setLocation}) => {
     );
   };
 
+  const navToNotfication=()=>{
+    //@ts-ignore
+    navigation.navigate("NotificationScreen")
+  }
   useEffect(() => {
     let isMounted = true;
 
@@ -122,7 +127,7 @@ const LocationNotificationHeader:React.FC<Props> = ({onPress,setLocation}) => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.bellContainer}>
+      <TouchableOpacity onPress={navToNotfication} style={styles.bellContainer}>
         <BellIcon />
         <View style={styles.redDot} />
       </TouchableOpacity>

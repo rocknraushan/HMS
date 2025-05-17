@@ -1,6 +1,13 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { IAddress, ILocation } from './User';
 
+
+interface IReviews {
+  user: mongoose.Types.ObjectId; // Reference to the User who wrote the review
+  rating: number;               // Rating given (1 to 5)
+  comment?: string;             // Optional review text
+  createdAt?: Date;             // Timestamp
+}
 export interface IDoctor extends Document {
   user: mongoose.Types.ObjectId;
   specialization: string;
@@ -9,6 +16,7 @@ export interface IDoctor extends Document {
     end: string;
   };
   clinicAddress?:IAddress;
+  reviews:IReviews[];
   location?: ILocation;
   isAvailable: boolean;
   bio?: string;
@@ -38,6 +46,32 @@ const locationSchema = new Schema(
     },
   },
   { _id: false }
+);
+
+const reviewSchema = new Schema<IReviews>(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+    },
+    comment: {
+      type: String,
+      trim: true,
+      maxlength: 1000,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false } // Make embedded, not a full sub-document
 );
 
 const addressSchema = new Schema(
@@ -99,8 +133,7 @@ const doctorSchema = new Schema<IDoctor>(
     },
     coverImage: {
       type: String,
-      required: false,
-      trim: true,
+      required: false
     },
     location: {
       type: locationSchema,
@@ -143,6 +176,10 @@ const doctorSchema = new Schema<IDoctor>(
       min: 0,
       max: 5,
     },
+    reviews: {
+      type: [reviewSchema],
+      default: [],
+    },
   },
   {
     timestamps: true,
@@ -150,13 +187,29 @@ const doctorSchema = new Schema<IDoctor>(
     toObject: { virtuals: true },
   }
 );
-
+// Geo index
 // Geo index
 doctorSchema.index({ location: '2dsphere' });
 
-// Example virtual (optional)
+// Virtual: isHighlyRated
 doctorSchema.virtual('isHighlyRated').get(function (this: IDoctor) {
   return this.rating && this.rating >= 4.5;
 });
 
+// Helper to compute average rating
+function computeAverageRating(reviews: IReviews[] = []): number {
+  if (reviews.length === 0) return 0;
+  const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+  return parseFloat((total / reviews.length).toFixed(1));
+}
+
+// Pre-save middleware to auto-update rating
+doctorSchema.pre('save', function (next) {
+  if (this.isModified('reviews')) {
+    this.rating = computeAverageRating(this.reviews);
+  }
+  next();
+});
+
 export default mongoose.model<IDoctor>('Doctor', doctorSchema);
+

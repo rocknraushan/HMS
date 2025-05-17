@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createNativeStackNavigator, NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-import { Splash, Login, Welcome } from '../screens';
+import { Splash, Login, Welcome, MyBookings } from '../screens';
 import SignupScreen from '../screens/auth/register/SignupScreen';
 import BottomNav from './patient/BottomNav';
 import ChangePasswordScreen from '../screens/auth/register/ChangePasswordScreen';
@@ -12,9 +12,10 @@ import EvaidyaTermsScreen from '../screens/main/profile/EvaidyaTermsScreen';
 import DoctorDetail from '../screens/main/Bookings/DoctorDetail';
 import BookAppointmentScreen from '../screens/main/Bookings/Components/BookAppointmentScreen';
 import DoctorProfileScreen from '../screens/DoctorProfile/DoctorProfileScreen';
+import NotificationScreen from '../screens/notification/NotificationScreen';
 
 const Stack = createNativeStackNavigator();
-
+const commonNavOption:NativeStackNavigationOptions = { navigationBarColor: '#f8f8f8', navigationBarTranslucent: true, statusBarTranslucent:false,statusBarBackgroundColor:"#fff" ,statusBarStyle:"dark"}
 const StackNav = () => {
   const navigation = useNavigation();
   return (
@@ -37,12 +38,19 @@ const StackNav = () => {
       <Stack.Screen name="ChangePasswordScreen" 
       //@ts-ignore
       component={ChangePasswordScreen} initialParams={{email:"",otpRequred:true,token:""}} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true,statusBarAnimation:"slide",animation:"flip",statusBarTranslucent:true, statusBarBackgroundColor:"#f8f8f8", statusBarStyle:"dark",headerShown:true, headerTitle:"Reset Password" }} />
-      <Stack.Screen name="UserProfileForm" component={UserProfileForm} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true,statusBarStyle:"dark",statusBarBackgroundColor:"transparent" }} />
-      <Stack.Screen name="DoctorTab" component={BottomNav} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true, statusBarTranslucent:true }} />
-      <Stack.Screen name="TermsScreen" component={EvaidyaTermsScreen} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true, statusBarTranslucent:true }} />
-      <Stack.Screen name="DoctorDetail" component={DoctorDetail} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true, statusBarTranslucent:true }} />
-      <Stack.Screen name="BookAppointmentScreen" component={BookAppointmentScreen} options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true, statusBarTranslucent:true }} />
-      <Stack.Screen component={DoctorProfileScreen} name='DoctorProfileScreen' options={{ navigationBarColor: '#f8f8f8', navigationBarTranslucent: true, statusBarTranslucent:false,statusBarBackgroundColor:"#fff" }} />
+      <Stack.Screen name="UserProfileForm" component={UserProfileForm} options={{...commonNavOption}}  />
+      <Stack.Screen name="DoctorTab" component={BottomNav} options={{...commonNavOption}}  />
+      <Stack.Screen name="TermsScreen" component={EvaidyaTermsScreen} options={{...commonNavOption}}  />
+      <Stack.Screen name="DoctorDetail" component={DoctorDetail} options={{...commonNavOption}}  />
+      <Stack.Screen name="NotificationScreen" component={NotificationScreen} options={{...commonNavOption}}  />
+      <Stack.Screen name="MyBookings" component={MyBookings} options={{...commonNavOption}}  />
+      <Stack.Screen name="BookAppointmentScreen"
+      //@ts-ignore
+       component={BookAppointmentScreen} options={{ ...commonNavOption}} />
+      <Stack.Screen
+      //@ts-ignore
+      component={DoctorProfileScreen} name='DoctorProfileScreen' options={{...commonNavOption}} />
+      
     </Stack.Navigator>
   );
 };

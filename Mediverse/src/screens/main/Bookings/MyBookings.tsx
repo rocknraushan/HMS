@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { img_1, img_2, img_3 } from '../../../assets';
 import FastImage from 'react-native-fast-image';
 import { rspH, rspW } from '../../../theme/responsive';
 import { NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../../navigation/navStrings';
+import { getAppointments } from '../../../HttpService/apiCalls';
 
 const BOOKINGS = [
   {
@@ -40,6 +41,25 @@ interface Props {
 }
 const MyBookings = ({ navigation }: Props) => {
   const [tab, setTab] = useState<'Upcoming' | 'Completed' | 'Canceled'>('Upcoming');
+
+  const getAppointment=()=>{
+    try {
+      const res = getAppointments()
+      console.log(res,"response")
+    } catch (error:any) {
+      console.log(error.response.data.message)
+    }
+  }
+
+  useEffect(() => {
+    getAppointment();
+  
+    return () => {
+      
+    }
+  }, [])
+  
+
 
   return (
     <View style={styles.container}>

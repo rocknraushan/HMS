@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import Doctor, { IDoctor } from '../models/doctor';
-import { AuthRequest } from 'index';
+import { AuthRequest } from "../types/index";
+import mongoose from 'mongoose';
+import { sendNotificationAndStore } from '../utils/NotificationService';
+import devices from '../models/devices';
+import { reviewBadge } from './config';
 
 export const getDoctors = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -32,7 +36,7 @@ export const getNearbyDoctors = async (req: AuthRequest, res: Response): Promise
               coordinates: [longitude, latitude],
             },
             distanceField: 'distance',
-            key: 'location', // 👈 specify the field that has the 2dsphere index
+            key: 'location', 
             spherical: true,
             maxDistance: 10000,
             query: { isAvailable: true },
@@ -65,6 +69,8 @@ export const getNearbyDoctors = async (req: AuthRequest, res: Response): Promise
             licenseNumber: 1,
             education: 1,
             verified: 1,
+            coverImage: 1,
+            reviews:1,
             user: {
               _id: 1,
               name: 1,
@@ -125,5 +131,61 @@ export const addDoctorProfile = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error('Error upserting doctor profile:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+export const addDoctorReviews = async (req: AuthRequest, res: Response):Promise<any> => {
+  try {
+    const userId = req.user?._id;
+    const { doctorId, rating, comment } = req.body;
+
+    if (userId && doctorId) {
+      const doctor = await Doctor.findById(doctorId);
+      if (!doctor) return res.status(404).json({ message: 'Doctor not found' });
+
+      doctor.reviews.push({
+        user: new mongoose.Types.ObjectId(userId),
+        rating,
+        comment,
+      });
+
+      await doctor.save(); // ✅ rating auto-updated here via pre-save hook
+      const id = doctor.user.id
+      const dev = await devices.findOne({user:id});
+      const devToken = dev?.token ||""
+      const notification={
+        title:"New Review",
+        body:"You got a new Review",
+        icon:reviewBadge
+      }
+      await sendNotificationAndStore(`${id}`,devToken,notification)
+      return res.status(200).json({ message: 'Review added successfully' });
+    }
+
+    res.status(400).json({ message: 'Missing userId or doctorId' });
+
+  } catch (error) {
+    console.error('Add Doctor Review Error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getDoctorReviews = async (req: AuthRequest, res: Response):Promise<any> => {
+  try {
+    const _id = req.query.id;
+    console.log(_id,"doctor id===>")
+    const doctor = await Doctor.findById(_id)
+      .select('reviews')
+      .populate('reviews.user', 'name profilePic');
+
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+
+    return res.status(200).json({ reviews: doctor.reviews });
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };

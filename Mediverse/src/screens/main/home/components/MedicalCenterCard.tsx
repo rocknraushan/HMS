@@ -9,14 +9,16 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { useNavigation } from '@react-navigation/native';
+import { IAddress } from '../../../profile/components/ProfileVal';
 
 export interface MedicalCenterCardProps {
-  item: {
-    title: string;
-    clinicAddress: string;
+  item:{
+    _id:string;
+    clinicAddress: IAddress;
     rating: number;
     reviewCount: number;
-    distance: string;
+    distance: number;
     duration: string;
     user: {
       gender: string;
@@ -25,15 +27,15 @@ export interface MedicalCenterCardProps {
       _id: string;
       name: string;
       profilePic: string;
-    },
+    
+    }
     isFavorite?: boolean;
-    onPressFavorite?: () => void;
   }
-  index: number;
+  onPressFavorite?: () => void;
+  onPress:(item:any)=>void;
 }
 
-const MedicalCenterCard = ({ item, index }: any) => {
-  console.log(item, "=======>item")
+const MedicalCenterCard:React.FC<MedicalCenterCardProps> = ({item,onPress,onPressFavorite} ) => {
   const {
     clinicAddress,
     rating,
@@ -41,13 +43,17 @@ const MedicalCenterCard = ({ item, index }: any) => {
     distance,
     duration,
     isFavorite = false,
-    onPressFavorite = () => { },
+    _id,
     user
   } = item;
   const { name, profilePic } = user;
   const title = name || 'Medical Center';
+  
+  const handlepress =()=>{
+    onPress(item)
+  }
   return (
-    <View style={styles.card}>
+    <TouchableOpacity onPress={handlepress} style={styles.card}>
       {/* Clinic Image */}
       <Image source={{ uri: profilePic }} style={styles.image} />
 
@@ -87,7 +93,7 @@ const MedicalCenterCard = ({ item, index }: any) => {
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

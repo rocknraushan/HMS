@@ -1,9 +1,13 @@
 import React, {useState} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, ScrollView} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {Calendar} from 'react-native-calendars';
 import {rspF, rspH, rspW, safe_top} from '../../../../theme/responsive';
-import {useNavigation} from '@react-navigation/native';
+import {NavigationProp, RouteProp, useNavigation} from '@react-navigation/native';
+import { RootStackParamList } from '../../../../navigation/navStrings';
+import { bookAppointment } from '../../../../HttpService/apiCalls';
+import Toast from 'react-native-toast-message';
+import CustomInput from '../../../../components/CustomInput/CustomInput';
 
 const TIME_SLOTS = [
   '09.00 AM', '09.30 AM', '10.00 AM',
@@ -12,10 +16,46 @@ const TIME_SLOTS = [
   '04.30 PM', '05.00 PM', '05.30 PM',
 ];
 
-const BookAppointmentScreen = () => {
-  const navigation = useNavigation();
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+interface Props{
+  navigation:NavigationProp<RootStackParamList, "BookAppointmentScreen">;
+  route:RouteProp<RootStackParamList,"BookAppointmentScreen">;
+}
+
+const BookAppointmentScreen = ({navigation,route}:Props) => {
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString());
   const [selectedTime, setSelectedTime] = useState('');
+  const [reason, setReason] = useState("");
+  const [homeVisit, setHomeVisit] = useState(false);
+  const bookAppointments=()=>{
+    try {
+      const res = bookAppointment({
+        appointmentType:"clinical",
+        date:selectedDate,
+        doctor:route.params.doctorId,
+        reason,
+        time:selectedTime
+      });
+      Toast.show({
+        type:"success",
+        text1:"Congratulations!",
+        text2:"Appointment has booked",
+        autoHide:true,
+        position:"top",
+        visibilityTime:5000
+      })
+      navigation.navigate("MyBookings")
+
+    } catch (error:any) {
+      Toast.show({
+        type:"error",
+        text1:"Error",
+        text2:`${error.response.message}`,
+        autoHide:true,
+        position:"top",
+        visibilityTime:5000
+      })
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -29,6 +69,23 @@ const BookAppointmentScreen = () => {
 
       <ScrollView contentContainerStyle={styles.content}>
         {/* Date Selector */}
+        <CustomInput
+          inputStyle={{height:100}}
+          extra={{
+            multiline:true,
+            textAlignVertical:"top"
+          }}
+          value={reason}
+          placeholder='Reason'
+          onChangeText={setReason}
+          />
+          <View style={{flexDirection:"row",justifyContent:"space-between"}}>
+            <Text>Home visit</Text>
+            <Switch
+            value={homeVisit}
+            onValueChange={setHomeVisit}
+            />
+          </View>
         <Text style={styles.sectionTitle}>Select Date</Text>
         <View style={styles.calendarWrapper}>
           <Calendar
@@ -72,7 +129,7 @@ const BookAppointmentScreen = () => {
       </ScrollView>
 
       {/* Confirm Button */}
-      <TouchableOpacity style={styles.confirmBtn}>
+      <TouchableOpacity onPress={bookAppointments} style={styles.confirmBtn}>
         <Text style={styles.confirmBtnText}>Confirm</Text>
       </TouchableOpacity>
     </View>

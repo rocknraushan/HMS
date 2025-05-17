@@ -15,6 +15,17 @@ export interface IAddress {
   pincode: string;
 }
 
+export interface INotification {
+  title: string;            // Notification title (for FCM notification payload)
+  body: string;             // Notification body text (for FCM notification payload)
+  data?: Record<string, string>;  // Optional data payload for FCM (key-value pairs)
+  type?: 'appointment' | 'emergency' | 'system' | 'reminder';
+  icon?:string;
+  read?: boolean;           // If user has seen the notification
+  createdAt?: Date;         // Timestamp
+}
+
+
 export interface IUser extends Document {
   firstName: string;
   lastName: string;
@@ -32,7 +43,7 @@ export interface IUser extends Document {
   firstLogin: boolean;
   location?: ILocation;
   address?: IAddress;
-
+  notification?:INotification[]
 }
 
 const userSchema: Schema<IUser> = new Schema(
@@ -73,7 +84,23 @@ const userSchema: Schema<IUser> = new Schema(
       enum: ["doctor", "nurse", "admin", "patient", "emt"],
       default: "patient",
       required: true
-    }
+    },
+    notification: [
+  {
+    title: { type: String, required: true },
+    body: { type: String, required: true },
+    data: { type: Map, of: String },
+    type: {
+      type: String,
+      enum: ['appointment', 'emergency', 'system', 'reminder'],
+      default: 'system',
+    },
+    icon:{type:String,required:false},
+    read: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now }
+  }
+]
+
   },
   { timestamps: true }
 );

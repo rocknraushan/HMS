@@ -55,7 +55,7 @@ export interface DoctorFormValues extends User {
     };
     clinicName: string;
     clinicPhone: string;
-    
+    coverImage:fileType;
     clinicAddress: {
         line1: string;
         line2?: string;

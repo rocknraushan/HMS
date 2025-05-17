@@ -62,24 +62,12 @@ const ProfileScreen = ({ navigation }: Props) => {
       <ScrollView contentContainerStyle={styles.container} style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Profile</Text>
 
-        {/* <TouchableOpacity style={styles.avatarContainer}>
-          <FastImage
-            source={(typeof profileData?.profilePic) == 'string' ? { uri: profileData?.profilePic } : profileData?.socialData?.photo ? {uri:profileData?.socialData?.photo}: Icons.userIcon} // replace with your image
-            style={styles.avatar}
-          />
-          <Pressable style={styles.editIconContainer}>
-            <EditIcon />
-          </Pressable>
-        </TouchableOpacity> */}
-        <FastImage
-          source={profileData?.coverImage ? { uri: profileData?.coverImage } : Icons.coverImage}
-          style={{ width: '100%', height: 200, borderRadius: 10,position:"absolute",marginTop:80}}
-          resizeMode='cover'
-        />
 
         <ProfilePicUploader
-        style={{ marginTop: 100,backgroundColor:"#fff",borderRadius:1000 }}
-          onSelect={(e) => updateProfilePic(e)}
+        style={{marginTop:10}}
+        hasCoverImg={profileData?.role === "doctor"}
+        coverImage={profileData?.coverImage}
+         onSelect={(e) => updateProfilePic(e)}
           image={profileData?.profilePic}
           onImgPress={() => {
             setshowFullImage(true);

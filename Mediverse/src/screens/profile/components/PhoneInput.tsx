@@ -132,7 +132,7 @@ const animatedStyle = useAnimatedStyle(() => {
           }
           onActionPress={handleVerify}
           
-          containerStyle={styles.fieldMargin}
+          // containerStyle={styles.fieldMargin}
         />
   
         {/* OTP Field with Animation */}

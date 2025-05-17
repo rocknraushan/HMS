@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-export default function BookAppointmentButton() {
+const BookAppointmentButton=({onPress}:{onPress:()=>void})=> {
   return (
-    <TouchableOpacity style={styles.button}>
+    <TouchableOpacity onPress={onPress} style={styles.button}>
       <Text style={styles.text}>Book Appointment</Text>
     </TouchableOpacity>
   );
 }
+
+export default memo(BookAppointmentButton)
 
 const styles = StyleSheet.create({
   button: {

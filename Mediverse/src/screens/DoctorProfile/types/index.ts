@@ -12,8 +12,10 @@ export interface Doctor {
 }
 
 export interface Review {
-  userName: string;
   rating: number;
   comment: string;
-  avatar: string;
+  user:{
+    name:string;
+    profilePic:string;
+  }
 }

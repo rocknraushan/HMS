@@ -14,6 +14,8 @@ import { DoctorFormValues, UserVal } from './ProfileVal';
 import Geolocation from '@react-native-community/geolocation';
 import CustomDatePicker from '../../../components/customDatePicker/CustomDatePicker';
 import PromiseButton from '../../../components/CustomButton/PromiseButton';
+import FastImage from 'react-native-fast-image';
+import { Icons } from '../../../assets/icons';
 
 type Props = {
   data: any;
@@ -48,9 +50,9 @@ const doctorSpecializations = [
 ];
 
 const genderData = [
-  {label:"Male", value:"male"},
-  {label:"Female", value:"female"},
-  {label:"Other", value:"other"}
+  { label: "Male", value: "male" },
+  { label: "Female", value: "female" },
+  { label: "Other", value: "other" }
 ]
 
 export const doctorVal: DoctorFormValues = {
@@ -62,19 +64,23 @@ export const doctorVal: DoctorFormValues = {
     start: '',
     end: ''
   },
-
+  coverImage: {
+    uri: '',
+    name: '',
+    type: ''
+  },
   location
     : {
     type: "Point",
     coordinates: [0, 0]
   },
   clinicAddress: {
-      city: '',
-      country: '',
-      line1: "",
-      line2: "",
-      pincode: "",
-      state: ""
+    city: '',
+    country: '',
+    line1: "",
+    line2: "",
+    pincode: "",
+    state: ""
   },
   isAvailable: true,
   bio: '',
@@ -110,13 +116,13 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
         type: "image/jpeg",
         name: "",
       }
-        });
-  
+    });
+
     return () => {
-      
+
     }
   }, [data]);
-  
+
   const handleDocumentPick = async () => {
     try {
       const res = await DocumentPicker.pick({
@@ -145,7 +151,7 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
     try {
       console.log('Form values:', values);
       const formData = new FormData();
-  
+
       Object.keys(values).forEach((key) => {
         if (key === 'profilePic' && 'uri' in values?.profilePic && values.profilePic.uri) {
           formData.append('profilePic', {
@@ -153,7 +159,15 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
             type: values.profilePic.type || 'image/jpeg',
             name: values.profilePic.name || 'profile.jpg',
           } as any); // Add `as any` to satisfy FormData type in React Native
-        } else if (
+        }else if(key === 'coverImage' && 'uri' in values?.coverImage && values.coverImage.uri){
+          formData.append('coverImage', {
+            uri: values.coverImage.uri,
+            type: values.coverImage.type || 'image/jpeg',
+            name: values.coverImage.name || 'profile.jpg',
+          } as any);
+        }
+        
+        else if (
           typeof values[key as keyof DoctorFormValues] === 'object'
         ) {
           formData.append(key, JSON.stringify(values[key as keyof DoctorFormValues]));
@@ -161,13 +175,13 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
           formData.append(key, String(values[key as keyof DoctorFormValues]));
         }
       });
-  
+
       await callProfileUpdateApi(formData, navigation);
     } catch (error: any) {
       console.log('Error:', error?.response?.data || error.message);
     }
   };
-  
+
 
   const handleShift = (key: string) => (value: string) => {
     if (key === 'workingHoursFrom') {
@@ -191,10 +205,10 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
     Geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        console.log(formikRef.current?.values.location,'Latitude:', latitude, 'Longitude:', longitude, position);
+        console.log(formikRef.current?.values.location, 'Latitude:', latitude, 'Longitude:', longitude, position);
         formikRef.current?.setFieldValue('location', {
-            type: "Point",
-            coordinates: [longitude, latitude]
+          type: "Point",
+          coordinates: [longitude, latitude]
         });
       },
       (error) => {
@@ -241,15 +255,20 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
       }) => (
         <>
           <ProfilePicUploader
+            style={{ marginBottom: 10 }}
+            hasCoverImg={data?.role === "doctor"}
+            // style={{ marginTop: 100, backgroundColor: "#fff", borderRadius: 1000,width:180,height:180,marginBottom:20,alignSelf:'center' }}
             onSelect={(e) => setFieldValue('profilePic', e)}
             image={values.profilePic?.uri}
+            coverImage={values.coverImage.uri}
+            onCoverSelect={(e) => setFieldValue("coverImage", e)}
           />
           <CustomInput
             placeholder="Full Name"
             value={values.name}
             onChangeText={handleChange('name')}
             error={touched.name && errors.name}
-            containerStyle={styles.fieldMargin}
+            // containerStyle={styles.fieldMargin}
             leftIcon={
               <VectorIcons
                 name="person"
@@ -277,7 +296,7 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
                 iconSet={IconSets.MaterialIcons}
               />
             }
-            containerStyle={[styles.fieldMargin]}
+          // containerStyle={[styles.fieldMargin]}
           />
           <PhoneInput
             value={values.phone}
@@ -294,11 +313,13 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
           <StyledDropdown
             data={genderData}
             value={values.gender}
+            placeholder='Gender'
             onChangeText={handleChange("gender")}
             error={touched.gender && errors.gender}
-            />
+          />
 
           <StyledDropdown
+            style={[styles.fieldMargin]}
             data={doctorSpecializations}
             placeholder="Select Specialization"
             label="Specialization"
@@ -310,8 +331,8 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
                 size={20}
                 color="#9CA3AF"
                 iconSet={IconSets.MaterialIcons}
-                style={{alignSelf: 'center'}}
-                />}
+                style={{ alignSelf: 'center' }}
+              />}
           />
           <CustomInput
             placeholder="License Number"
@@ -342,7 +363,7 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
                 iconSet={IconSets.MaterialIcons}
               />
             }
-            />
+          />
           <CustomInput
             placeholder="Experience (in years)"
             value={`${values.experience}`}
@@ -383,15 +404,15 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
             placeholder="Home Visit"
             label="Home Visit"
             value={values.homeVisit}
-            onChangeText={handleChange('homeVisit')}
+            onChangeText={(val) => setFieldValue('homeVisit', val)}
             leftIcon={
               <VectorIcons
                 name="home"
                 size={20}
                 color="#9CA3AF"
                 iconSet={IconSets.MaterialIcons}
-                style={{alignSelf: 'center'}}
-                />}
+                style={{ alignSelf: 'center' }}
+              />}
           />
           <CustomInput
             placeholder="Clinic Name"
@@ -470,15 +491,15 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
             containerStyle={[styles.fieldMargin]}
           />
           <View style={styles.rowCenter}>
-            <Text style={{ color: 'rgba(28, 42, 58, 1)'}}>{`${JSON.stringify(values.location.coordinates)}`}</Text>
-          <Pressable style={{ flexDirection: 'row', alignSelf: 'flex-end' }} onPress={getLocation}>
-            <Text style={{ color: 'rgba(28, 42, 58, 1)' }}>{`Get Current Location`}</Text>
-            <VectorIcons
-              name="location-on"
-              size={20}
-              color="rgba(28, 42, 58, 1)"
-              iconSet={IconSets.MaterialIcons} />
-          </Pressable>
+            <Text style={{ color: 'rgba(28, 42, 58, 1)' }}>{`${JSON.stringify(values.location.coordinates)}`}</Text>
+            <Pressable style={{ flexDirection: 'row', alignSelf: 'flex-end' }} onPress={getLocation}>
+              <Text style={{ color: 'rgba(28, 42, 58, 1)' }}>{`Get Current Location`}</Text>
+              <VectorIcons
+                name="location-on"
+                size={20}
+                color="rgba(28, 42, 58, 1)"
+                iconSet={IconSets.MaterialIcons} />
+            </Pressable>
           </View>
           <CustomInput
             placeholder="Bio"
@@ -490,7 +511,7 @@ const DoctorForm: React.FC<Props> = ({ data, navigation }) => {
           <PromiseButton
             text='Update Profile'
             loading={isSubmitting}
-            onPress={()=>updateProfile(values, {} as FormikHelpers<any>)}
+            onPress={() => updateProfile(values, {} as FormikHelpers<any>)}
             style={[styles.fieldMargin]}
           />
         </>
@@ -508,7 +529,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   fieldMargin: {
-    marginTop: 20,
+    marginTop: 10,
   },
   labelStyleBase: {
     fontSize: 14,

@@ -11,6 +11,7 @@ export type RootStackParamList = {
   LOGIN:undefined;
   REGISTER: undefined;
   VERIFY_OTP: undefined;
+  NotificationScreen:undefined;
   SELECT_CATEGORIES: { hideBack?: boolean };
   NOTIFICATIONS: undefined;
   SIGNUP: undefined;
@@ -21,7 +22,8 @@ export type RootStackParamList = {
   DoctorDetail: undefined;
   ProfileScreen: undefined;
   MyBookings: undefined;
-  BookAppointmentScreen: undefined;
+  BookAppointmentScreen: {doctorId:string};
+  DoctorProfileScreen:{doctor_details:any}
 };
 
 export const navStrings = {

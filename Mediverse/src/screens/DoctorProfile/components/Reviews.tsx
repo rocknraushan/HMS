@@ -1,23 +1,47 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { Review } from '../types';
+import { getDoctorReviews } from '../../../HttpService/apiCalls';
 
 interface Props {
-  review: Review;
+  id: string;
 }
 
-export default function Reviews({ review }: Props) {
+export default function Reviews({ id }: Props) {
+  const [reviews, setReviews] = useState<Review[]>([])
+  const getReviwes = async () => {
+    try {
+      console.log(id,"doctor id")
+      const data = await getDoctorReviews(id);
+      setReviews(data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  useEffect(() => {
+    getReviwes()
+
+    return () => {
+
+    }
+  }, [id])
+
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Reviews</Text>
-      <View style={styles.reviewCard}>
-        <Image source={{ uri: review.avatar }} style={styles.avatar} />
-        <View style={{ flex: 1 }}>
-          <Text style={styles.name}>{review.userName}</Text>
-          <Text style={styles.rating}>⭐ {review.rating}</Text>
-          <Text style={styles.comment}>{review.comment}</Text>
-        </View>
-      </View>
+      {
+        reviews.map((review,index) => (
+
+          <View key={index} style={styles.reviewCard}>
+            <Image source={{ uri: review.user.profilePic }} style={styles.avatar} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.name}>{review.user.name}</Text>
+              <Text style={styles.rating}>⭐ {review.rating}</Text>
+              <Text style={styles.comment}>{review.comment}</Text>
+            </View>
+          </View>
+        ))
+      }
     </View>
   );
 }
@@ -32,7 +56,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   avatar: { width: 40, height: 40, borderRadius: 20 },
-  name: { fontWeight: 'bold' },
+  name: { fontWeight: 'bold',
+    textTransform:"capitalize"
+   },
   rating: { color: 'orange' },
   comment: { color: 'gray' },
 });

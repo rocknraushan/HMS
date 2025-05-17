@@ -1,15 +1,21 @@
 import { Request, Response } from 'express';
 import Appointment, { IAppointment } from '../models/appointment';
-import { AuthRequest } from 'index';
 import Patients from '../models/Patients';
+import { AuthRequest } from '../types';
 
 // GET all Appointments
 export const getAppointments = async (req: Request, res: Response): Promise<any> => {
     try {
         const appointments = await Appointment.find()
-            .populate('patient', 'name email') // only get specific fields if needed
-            .populate('doctor', 'name specialization'); // optional, to optimize the query size
-
+    .populate('patient', 'name email') // Populate patient, selecting name and email
+    .populate({
+        path: 'doctor', // Populate the doctor field
+        select: 'clinicAddress specialization', // Select name and specialization for the doctor
+        populate: {
+            path: 'user', // Populate the user field within the doctor document
+            select: 'name profilePic' // Select name and profilePic for the user
+        }
+    });
         res.status(200).json(appointments);
     } catch (error) {
         console.error(error);
@@ -35,12 +41,11 @@ export const createAppointment = async (req: AuthRequest, res: Response): Promis
         if (appointmentExists?.status && appointmentExists?.status !== 'cancelled') {
             return res.status(400).json({ message: 'Appointment already exists for this date and doctor' });
         }
-        const discoveredPatient = await Patients.findOne({user: user?._id});
-        if (!discoveredPatient) {
+        if (!user?._id) {
             return res.status(404).json({ message: 'Patient not found' });
         }
         const newAppointment = new Appointment({
-            patient: discoveredPatient?._id,
+            patient: user?._id,
             doctor,
             nurse,
             date,
@@ -49,6 +54,7 @@ export const createAppointment = async (req: AuthRequest, res: Response): Promis
             appointmentType 
         });
         const savedAppointment = await newAppointment.save();
+        
         res.status(201).json(savedAppointment);
     } catch (error) {
         console.error(error);

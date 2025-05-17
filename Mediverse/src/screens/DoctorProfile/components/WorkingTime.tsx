@@ -1,15 +1,16 @@
+import moment from 'moment';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 interface Props {
-  time: string;
+  time: {start:string,end:string};
 }
 
 export default function WorkingTime({ time }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Working Time</Text>
-      <Text style={styles.time}>{time}</Text>
+      <Text style={styles.time}>Monday - Friday {moment(time.start, 'HH:mm').format('hh:mm A')+"-"+moment(time.end, 'HH:mm').format('hh:mm A')}</Text>
     </View>
   );
 }

@@ -17,7 +17,7 @@ interface DropdownProps {
   error?: any;
   data: DropdownType[];
   value?: any;
-  onChangeText?: (val: string) => void;
+  onChangeText?: (val: any) => void;
   dropdownStyle?: StyleProp<ViewStyle>;
   placeholder?: string;
   disabled?: boolean;
@@ -52,7 +52,7 @@ const StyledDropdown = ({
   const styles = styleSheet(theme);
 
   const selectedValue = useMemo(() => {
-    return data?.find(item => item?.value === value);
+    return data?.find(item => item?.value == value);
   }, [value, data]);
 
   const onChange = useCallback((item: DropdownType) => {
@@ -61,13 +61,14 @@ const StyledDropdown = ({
 
   return (
     <Animated.View
+      style={style}
       entering={FadeIn.duration(300)}
       exiting={FadeOut.duration(300)}
       >
       {label && (
         <Text style={[styles.labelStyleBase, labelStyle]}>{label}</Text>
       )}
-    <View style={[styles.listWrapper,style]}>
+    <View style={[styles.listWrapper]}>
       {leftIcon && (
         leftIcon
       )}
