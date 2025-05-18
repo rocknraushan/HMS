@@ -112,6 +112,7 @@ export async function getAppointments():Promise<any[]> {
         try {
             const client = await getAxiosClient();
             const response = await client.get(Services.APPOINTMENTS);
+            console.log(response.data,"response:::::>>>")
             res(response.data)
         } catch (error) {
             rej(error)

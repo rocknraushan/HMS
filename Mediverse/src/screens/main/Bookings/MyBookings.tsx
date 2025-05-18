@@ -42,10 +42,10 @@ interface Props {
 const MyBookings = ({ navigation }: Props) => {
   const [tab, setTab] = useState<'Upcoming' | 'Completed' | 'Canceled'>('Upcoming');
 
-  const getAppointment=()=>{
+  const getAppointment=async()=>{
     try {
-      const res = getAppointments()
-      console.log(res,"response")
+      const res =await getAppointments()
+      console.log(res,"====>response")
     } catch (error:any) {
       console.log(error.response.data.message)
     }
